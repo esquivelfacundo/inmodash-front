@@ -161,8 +161,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const apiUrl = 'https://inmodash-back-production.up.railway.app';
-      console.log('API URL for registration (hardcoded):', apiUrl); // Debug log
-      console.log('Full URL:', `${apiUrl}/api/auth/register`); // Full URL debug
+      console.log('🔥 REGISTRATION ATTEMPT - API URL (hardcoded):', apiUrl);
+      console.log('🔥 FULL REGISTRATION URL:', `${apiUrl}/api/auth/register`);
+      console.log('🔥 TIMESTAMP:', new Date().toISOString());
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         credentials: 'include',

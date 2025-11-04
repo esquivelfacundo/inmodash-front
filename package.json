@@ -7,7 +7,7 @@
   "license": "ISC",
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next dev -p 3975",
-    "build": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
+    "build": "rm -rf .next && cross-env NODE_OPTIONS=--max-old-space-size=4096 next build",
     "build:experimental": "cross-env NODE_OPTIONS=--max-old-space-size=4096 NEXT_TELEMETRY_DISABLED=1 next build --no-lint",
     "start": "next start -p 3975",
     "lint": "next lint",
