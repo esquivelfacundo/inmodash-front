@@ -23,6 +23,8 @@ export default function ApartmentsPage() {
   const { buildings, loading: buildingsLoading } = useBuildings()
   const [propertyFilter, setPropertyFilter] = useState<PropertyFilter>('all')
   const [expandedApartment, setExpandedApartment] = useState<number | null>(null)
+  const [selectedBuildingId, setSelectedBuildingId] = useState<number | 'all'>('all')
+  const [selectedStatus, setSelectedStatus] = useState<ApartmentStatus | 'all'>('all')
 
   const loading = apartmentsLoading || buildingsLoading
 
@@ -71,21 +73,39 @@ export default function ApartmentsPage() {
     }
   }
 
-  // Filter apartments by property type
-  const filteredApartments = propertyFilter === 'all' 
-    ? apartments
-    : apartments.filter(apartment => {
-        if (propertyFilter === 'departamentos') {
-          return apartment.propertyType === 'departamento'
-        } else if (propertyFilter === 'casas') {
-          return apartment.propertyType === 'casa'
-        } else if (propertyFilter === 'cocheras') {
-          return apartment.propertyType === 'cochera'
-        } else if (propertyFilter === 'locales') {
-          return apartment.propertyType === 'local_comercial'
-        }
-        return true
-      })
+  // Filter apartments by property type, building, and status
+  const filteredApartments = apartments.filter(apartment => {
+    // Filter by property type
+    let matchesPropertyType = true
+    if (propertyFilter !== 'all') {
+      if (propertyFilter === 'departamentos') {
+        matchesPropertyType = apartment.propertyType === 'departamento'
+      } else if (propertyFilter === 'casas') {
+        matchesPropertyType = apartment.propertyType === 'casa'
+      } else if (propertyFilter === 'cocheras') {
+        matchesPropertyType = apartment.propertyType === 'cochera'
+      } else if (propertyFilter === 'locales') {
+        matchesPropertyType = apartment.propertyType === 'local_comercial'
+      }
+    }
+
+    // Filter by building (only for properties in buildings)
+    let matchesBuilding = true
+    if (selectedBuildingId !== 'all' && apartment.buildingId) {
+      matchesBuilding = apartment.buildingId === selectedBuildingId
+    }
+
+    // Filter by status
+    let matchesStatus = true
+    if (selectedStatus !== 'all') {
+      matchesStatus = apartment.status === selectedStatus
+    }
+
+    return matchesPropertyType && matchesBuilding && matchesStatus
+  })
+
+  // Show building filter only for property types that can be in buildings
+  const showBuildingFilter = propertyFilter === 'all' || propertyFilter === 'departamentos' || propertyFilter === 'cocheras'
 
   const handleApartmentClick = (apartmentId: number) => {
     router.push(`/apartments/${apartmentId}`)
@@ -151,7 +171,9 @@ export default function ApartmentsPage() {
         </GlassCardHeader>
         <GlassCardContent>
           {/* Filters */}
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+            {/* Property Type Filters */}
+            <div className="flex flex-wrap gap-2">
             <Button
               variant={propertyFilter === 'all' ? 'default' : 'outline'}
               size="sm"
@@ -196,6 +218,37 @@ export default function ApartmentsPage() {
               <Building2 className="h-3 w-3 mr-1" />
               Locales Comerciales
             </Button>
+            </div>
+
+            {/* Building and Status Filters */}
+            {showBuildingFilter && (
+              <div className="flex flex-wrap gap-2">
+                {/* Building Filter */}
+                <select
+                  value={selectedBuildingId}
+                  onChange={(e) => setSelectedBuildingId(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                  className="px-3 py-2 rounded-lg bg-white/5 text-white text-sm border border-white/10 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all" className="bg-slate-900">Todos los edificios</option>
+                  {buildings.map((building) => (
+                    <option key={building.id} value={building.id} className="bg-slate-900">
+                      {building.name}
+                    </option>
+                  ))}
+                </select>
+
+                {/* Status Filter */}
+                <select
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value as ApartmentStatus | 'all')}
+                  className="px-3 py-2 rounded-lg bg-white/5 text-white text-sm border border-white/10 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="all" className="bg-slate-900">Todos los estados</option>
+                  <option value={ApartmentStatus.AVAILABLE} className="bg-slate-900">Disponible</option>
+                  <option value={ApartmentStatus.RENTED} className="bg-slate-900">Alquilado</option>
+                </select>
+              </div>
+            )}
           </div>
 
           {filteredApartments.length === 0 ? (
