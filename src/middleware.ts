@@ -91,16 +91,23 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // Get access token from cookies
-    const accessToken = request.cookies.get('auth-token')?.value || '';
+    // Check authentication by calling backend /me endpoint
+    let isAuthenticated = false;
     
-    // Validate token if exists
-    let tokenPayload = null;
-    if (accessToken) {
-      tokenPayload = await validateToken(accessToken);
+    try {
+      const authResponse = await fetch('https://inmodash-back-production.up.railway.app/api/auth/me', {
+        method: 'GET',
+        headers: {
+          'Cookie': request.headers.get('cookie') || '',
+        },
+      });
+      
+      isAuthenticated = authResponse.ok;
+      console.log('Auth check:', { path: pathname, authenticated: isAuthenticated, status: authResponse.status });
+    } catch (error) {
+      console.log('Auth check failed:', error);
+      isAuthenticated = false;
     }
-
-    const isAuthenticated = !!tokenPayload;
     const isProtectedRoute = matchesPath(pathname, PROTECTED_ROUTES);
     const isAuthRoute = matchesPath(pathname, AUTH_ROUTES);
     const isPublicRoute = matchesPath(pathname, PUBLIC_ROUTES);
@@ -120,7 +127,7 @@ export async function middleware(request: NextRequest) {
       // Log unauthorized access attempt (simplified for edge runtime)
       console.warn('Unauthorized access attempt:', {
         path: pathname,
-        hasToken: !!accessToken,
+        authenticated: isAuthenticated,
       });
 
       // Redirect to login with return URL
@@ -177,11 +184,8 @@ export async function middleware(request: NextRequest) {
     
     response.headers.set('Content-Security-Policy', cspHeader);
 
-    // Add user info to headers for server components (if authenticated)
-    if (tokenPayload) {
-      response.headers.set('X-User-Id', tokenPayload.userId.toString());
-      response.headers.set('X-User-Role', tokenPayload.role);
-    }
+    // Note: User info headers removed since we're using backend auth check
+    // Server components should call the backend directly for user data
 
     return response;
 
