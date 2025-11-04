@@ -75,8 +75,12 @@ export default function BuildingDetailPage() {
     }
   }
 
+  // Separar cocheras de departamentos
+  const parkingSpaces = apartments.filter(apt => apt.propertyType === 'cochera')
+  const regularApartments = apartments.filter(apt => apt.propertyType !== 'cochera')
+
   // Agrupar departamentos por piso (solo los que tienen piso definido)
-  const apartmentsByFloor = apartments.reduce((acc, apartment) => {
+  const apartmentsByFloor = regularApartments.reduce((acc, apartment) => {
     if (apartment.floor !== null && apartment.floor !== undefined) {
       if (!acc[apartment.floor]) {
         acc[apartment.floor] = []
@@ -382,6 +386,87 @@ export default function BuildingDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Parking Spaces Section */}
+      {parkingSpaces.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5" />
+                  Cocheras
+                </CardTitle>
+                <CardDescription>
+                  {parkingSpaces.length} cochera{parkingSpaces.length !== 1 ? 's' : ''} asociada{parkingSpaces.length !== 1 ? 's' : ''} a este edificio
+                </CardDescription>
+              </div>
+              <Link href={`/apartments/new?buildingId=${buildingId}&type=cochera`}>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Agregar Cochera
+                </Button>
+              </Link>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {parkingSpaces
+                .sort((a, b) => (a.nomenclature || '').localeCompare(b.nomenclature || ''))
+                .map((parking) => {
+                  const availableCount = parkingSpaces.filter(p => p.status === ApartmentStatus.AVAILABLE).length
+                  const rentedCount = parkingSpaces.filter(p => p.status === ApartmentStatus.RENTED).length
+
+                  return (
+                    <Card key={parking.id} className="hover:shadow-md transition-shadow">
+                      <CardHeader className="pb-3">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <CardTitle className="text-lg">
+                              Cochera {parking.nomenclature}
+                            </CardTitle>
+                            <CardDescription className="text-xs">
+                              {parking.uniqueId}
+                            </CardDescription>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(parking.status)}`}>
+                            {parking.status === ApartmentStatus.AVAILABLE && 'Disponible'}
+                            {parking.status === ApartmentStatus.RENTED && 'Alquilada'}
+                            {parking.status === ApartmentStatus.UNDER_RENOVATION && 'En Renovación'}
+                            {parking.status === ApartmentStatus.PERSONAL_USE && 'Uso Personal'}
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <CardContent className="space-y-3">
+                        {parking.area > 0 && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-white/60">Área:</span>
+                            <span className="font-medium">{formatArea(parking.area)}</span>
+                          </div>
+                        )}
+                        {parking.saleStatus && parking.saleStatus === SaleStatus.FOR_SALE && (
+                          <div className="flex items-center justify-between text-sm">
+                            <span className="text-white/60">Estado de Venta:</span>
+                            <span className="px-2 py-1 bg-orange-500/20 text-orange-300 rounded-full text-xs font-medium">
+                              En Venta
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex gap-2 pt-2">
+                          <Link href={`/apartments/${parking.id}`} className="flex-1">
+                            <Button variant="outline" size="sm" className="w-full">
+                              Ver Detalles
+                            </Button>
+                          </Link>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Delete Confirmation Modal */}
       {showDeleteConfirm && (
