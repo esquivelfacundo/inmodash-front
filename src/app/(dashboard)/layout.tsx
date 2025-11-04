@@ -23,9 +23,9 @@ export default function DashboardLayout({
         <Sidebar />
         
         {/* Main Content - Con fondo glass effect */}
-        <main className="flex-1 overflow-y-auto glass-scrollbar">
-          <div className="h-full p-8">
-            <div className="h-full bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-8 overflow-y-auto glass-scrollbar">
+        <main className="flex-1 overflow-y-auto glass-scrollbar pt-16 lg:pt-0">
+          <div className="h-full p-4 lg:p-8">
+            <div className="h-full bg-white/10 backdrop-blur-xl rounded-3xl shadow-2xl p-4 lg:p-8 overflow-y-auto glass-scrollbar">
               <PageTransition>
                 {children}
               </PageTransition>
