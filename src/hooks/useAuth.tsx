@@ -161,7 +161,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      console.log('API URL:', apiUrl); // Debug log
+      console.log('API URL for registration:', apiUrl); // Debug log
+      console.log('Full URL:', `${apiUrl}/api/auth/register`); // Full URL debug
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         credentials: 'include',
@@ -176,7 +177,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }),
       });
 
-      const data = await response.json();
+      console.log('Response status:', response.status);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+      
+      let data;
+      try {
+        data = await response.json();
+        console.log('Response data:', data);
+      } catch (jsonError) {
+        console.error('JSON parse error:', jsonError);
+        const text = await response.text();
+        console.log('Response text:', text);
+        throw new Error('Invalid JSON response from server');
+      }
 
       if (response.ok) {
         setAuthState(prev => ({
