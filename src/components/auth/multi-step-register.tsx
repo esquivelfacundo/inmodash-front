@@ -113,8 +113,11 @@ export function MultiStepRegister() {
       
       if (success) {
         console.log('🔥 Registration successful via useAuth')
+        alert('¡Registro exitoso! Bienvenido a InmoDash')
         // Redirigir al dashboard ya que el usuario está autenticado
-        window.location.href = '/dashboard'
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 1000)
       } else {
         throw new Error('Error al registrar usuario')
       }

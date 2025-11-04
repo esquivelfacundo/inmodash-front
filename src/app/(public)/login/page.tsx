@@ -2,6 +2,7 @@
 
 import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -16,6 +17,7 @@ function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('return') || '/dashboard';
+  const { login: loginUser } = useAuth();
   
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,42 +39,22 @@ function LoginForm() {
     setSuccess(null);
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        if (response.status === 429) {
-          setError(`Too many login attempts. Please try again in ${result.retryAfter} seconds.`);
-        } else if (response.status === 423) {
-          setError(result.message || 'Account is temporarily locked.');
-        } else if (response.status === 403) {
-          setError('Please verify your email address before logging in.');
-        } else {
-          setError(result.message || 'Login failed. Please check your credentials.');
-        }
-        return;
-      }
-
-      // Save access token to localStorage for Express backend API calls
-      if (result.data?.accessToken) {
-        localStorage.setItem('auth-token', result.data.accessToken);
-        console.log('Token saved to localStorage');
-      }
-
-      setSuccess('Login successful!');
-      setShowLoadingTransition(true);
+      console.log('🔥 LOGIN ATTEMPT - Using useAuth hook');
       
-      // Wait longer to ensure cookies are fully set
-      setTimeout(() => {
-        window.location.href = returnUrl;
-      }, 2000);
+      const success = await loginUser(data.email, data.password);
+
+      if (success) {
+        console.log('🔥 Login successful via useAuth');
+        setSuccess('Login successful!');
+        setShowLoadingTransition(true);
+        
+        // Wait longer to ensure cookies are fully set
+        setTimeout(() => {
+          window.location.href = returnUrl;
+        }, 2000);
+      } else {
+        setError('Invalid credentials. Please try again.');
+      }
 
     } catch (error) {
       console.error('Login error:', error);
