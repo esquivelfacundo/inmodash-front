@@ -1,10 +1,12 @@
+
 'use client'
 
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Building2, Home, Plus, Users, Edit, MapPin, UserCircle } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Building2, Home, Plus, MapPin, ArrowRight, ChevronDown } from 'lucide-react'
+import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card'
+import { GlassStatCard } from '@/components/ui/glass-stat-card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Loading } from '@/components/ui/loading'
@@ -13,11 +15,14 @@ import { useBuildings } from '@/hooks/useBuildings'
 import { ApartmentStatus, SaleStatus } from '@/types'
 import { formatArea, formatRooms } from '@/lib/utils'
 
+type PropertyFilter = 'all' | 'departamentos' | 'casas' | 'cocheras' | 'locales'
+
 export default function ApartmentsPage() {
   const router = useRouter()
   const { apartments, loading: apartmentsLoading } = useApartments()
   const { buildings, loading: buildingsLoading } = useBuildings()
-  const [selectedBuildingId, setSelectedBuildingId] = useState<number | null>(null)
+  const [propertyFilter, setPropertyFilter] = useState<PropertyFilter>('all')
+  const [expandedApartment, setExpandedApartment] = useState<number | null>(null)
 
   const loading = apartmentsLoading || buildingsLoading
 
@@ -66,14 +71,25 @@ export default function ApartmentsPage() {
     }
   }
 
-  // Filtrar departamentos por edificio seleccionado
-  const filteredApartments = selectedBuildingId === null
+  // Filter apartments by property type
+  const filteredApartments = propertyFilter === 'all' 
     ? apartments
-    : apartments.filter(apt => 
-        selectedBuildingId === 0 
-          ? !apt.buildingId // Propiedades independientes
-          : apt.buildingId === selectedBuildingId
-      )
+    : apartments.filter(apartment => {
+        if (propertyFilter === 'departamentos') {
+          return apartment.propertyType === 'departamento'
+        } else if (propertyFilter === 'casas') {
+          return apartment.propertyType === 'casa'
+        } else if (propertyFilter === 'cocheras') {
+          return apartment.propertyType === 'cochera'
+        } else if (propertyFilter === 'locales') {
+          return apartment.propertyType === 'local_comercial'
+        }
+        return true
+      })
+
+  const handleApartmentClick = (apartmentId: number) => {
+    router.push(`/apartments/${apartmentId}`)
+  }
 
   if (loading) {
     return <Loading size="lg" text="Cargando departamentos..." />
@@ -98,221 +114,240 @@ export default function ApartmentsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total</CardTitle>
-            <Home className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{apartments.length}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Disponibles</CardTitle>
-            <Home className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {apartments.filter(a => a.status === ApartmentStatus.AVAILABLE).length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Alquilados</CardTitle>
-            <Home className="h-4 w-4 text-blue-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {apartments.filter(a => a.status === ApartmentStatus.RENTED).length}
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">En Venta</CardTitle>
-            <Home className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {apartments.filter(a => a.saleStatus === SaleStatus.FOR_SALE).length}
-            </div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <GlassStatCard
+          title="Total Propiedades"
+          value={apartments.length}
+          icon={Home}
+        />
+        <GlassStatCard
+          title="Disponibles"
+          value={apartments.filter(a => a.status === ApartmentStatus.AVAILABLE).length}
+          icon={Home}
+          iconClassName="bg-green-500/20"
+        />
+        <GlassStatCard
+          title="Alquiladas"
+          value={apartments.filter(a => a.status === ApartmentStatus.RENTED).length}
+          icon={Home}
+          iconClassName="bg-blue-500/20"
+        />
+        <GlassStatCard
+          title="En Venta"
+          value={apartments.filter(a => a.saleStatus === SaleStatus.FOR_SALE).length}
+          icon={Home}
+          iconClassName="bg-orange-500/20"
+        />
       </div>
 
-      {/* Building Filter Pills */}
-      <div className="space-y-3">
-        <h3 className="text-sm font-medium text-white/80">Filtrar por edificio</h3>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant={selectedBuildingId === null ? "default" : "outline"}
-            size="sm"
-            onClick={() => setSelectedBuildingId(null)}
-            className="rounded-full"
-          >
-            Todos ({apartments.length})
-          </Button>
-          
-          {buildings.length > 0 && buildings.map((building) => {
-            const count = apartments.filter(apt => apt.buildingId === building.id).length
-            return (
-              <Button
-                key={building.id}
-                variant={selectedBuildingId === building.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedBuildingId(building.id)}
-                className="rounded-full"
-              >
-                <Building2 className="h-3 w-3 mr-1" />
-                {building.name} ({count})
-              </Button>
-            )
-          })}
-          
-          {apartments.some(apt => !apt.buildingId) && (
+
+      {/* Apartments List */}
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2 text-white">
+            <Home className="h-5 w-5" />
+            Todas las Propiedades
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent>
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2 mb-6">
             <Button
-              variant={selectedBuildingId === 0 ? "default" : "outline"}
+              variant={propertyFilter === 'all' ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setSelectedBuildingId(0)}
-              className="rounded-full"
+              onClick={() => setPropertyFilter('all')}
+              className={propertyFilter === 'all' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+            >
+              Todos
+            </Button>
+            <Button
+              variant={propertyFilter === 'departamentos' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPropertyFilter('departamentos')}
+              className={propertyFilter === 'departamentos' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+            >
+              <Building2 className="h-3 w-3 mr-1" />
+              Departamentos
+            </Button>
+            <Button
+              variant={propertyFilter === 'casas' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPropertyFilter('casas')}
+              className={propertyFilter === 'casas' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
             >
               <Home className="h-3 w-3 mr-1" />
-              Independientes ({apartments.filter(apt => !apt.buildingId).length})
+              Casas
             </Button>
-          )}
-        </div>
-      </div>
+            <Button
+              variant={propertyFilter === 'cocheras' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPropertyFilter('cocheras')}
+              className={propertyFilter === 'cocheras' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+            >
+              <MapPin className="h-3 w-3 mr-1" />
+              Cocheras
+            </Button>
+            <Button
+              variant={propertyFilter === 'locales' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPropertyFilter('locales')}
+              className={propertyFilter === 'locales' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+            >
+              <Building2 className="h-3 w-3 mr-1" />
+              Locales Comerciales
+            </Button>
+          </div>
 
-      {/* Apartments Grid */}
-      {filteredApartments.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <Home className="h-16 w-16 text-white/20 mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">
-              {apartments.length === 0 
-                ? 'No hay departamentos registrados'
-                : 'No hay departamentos en este edificio'
-              }
-            </h3>
-            <p className="text-white/60 text-center mb-6 max-w-md">
-              {apartments.length === 0 
-                ? 'Los departamentos se crean desde los edificios.'
-                : 'Selecciona otro edificio para ver sus departamentos.'
-              }
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredApartments.map((apartment) => (
-            <Card key={apartment.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="flex items-center space-x-2">
-                      <Home className="h-5 w-5 text-blue-600" />
-                      <span>{apartment.nomenclature}</span>
-                    </CardTitle>
-                    <CardDescription className="flex items-center space-x-1 mt-1">
-                      {apartment.buildingId ? (
-                        <>
-                          <Building2 className="h-4 w-4" />
-                          <span>{getBuildingName(apartment.buildingId)}</span>
-                        </>
-                      ) : (
-                        <>
-                          <MapPin className="h-4 w-4" />
-                          <span className="truncate">{apartment.fullAddress || 'Propiedad independiente'}</span>
-                        </>
-                      )}
-                    </CardDescription>
+          {filteredApartments.length === 0 ? (
+            <div className="py-12 text-center">
+              <Home className="h-12 w-12 text-white/20 mx-auto mb-3" />
+              <p className="text-white font-medium">No hay propiedades registradas</p>
+              <p className="text-white/60 text-sm mt-1">Comienza creando tu primera propiedad</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredApartments.map((apartment) => (
+                <div
+                  key={apartment.id}
+                  className="group relative overflow-hidden rounded-xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-200"
+                >
+                  {/* Desktop View */}
+                  <div 
+                    className="hidden md:flex items-center gap-4 p-4 cursor-pointer"
+                    onClick={() => handleApartmentClick(apartment.id)}
+                  >
+                    {/* Icon and Name */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0">
+                        <Home className="h-4 w-4 text-blue-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-white truncate">
+                          {apartment.buildingId ? getBuildingName(apartment.buildingId) : apartment.fullAddress || 'Propiedad'} - {apartment.nomenclature}
+                        </p>
+                        <p className="text-sm text-white/60 truncate">
+                          {apartment.buildingId ? `Piso ${apartment.floor}${apartment.apartmentLetter ? ` - ${apartment.apartmentLetter}` : ''}` : apartment.city}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-6 flex-shrink-0">
+                      {/* Area */}
+                      <div className="text-center">
+                        <p className="text-xs text-white/60 mb-1">Área</p>
+                        <div className="px-3 py-1 rounded-lg bg-white/10">
+                          <span className="text-sm font-semibold text-white">{formatArea(apartment.area)}</span>
+                        </div>
+                      </div>
+
+                      {/* Rooms */}
+                      <div className="text-center">
+                        <p className="text-xs text-white/60 mb-1">Ambientes</p>
+                        <div className="px-3 py-1 rounded-lg bg-white/10">
+                          <span className="text-sm font-semibold text-white">{formatRooms(apartment.rooms)}</span>
+                        </div>
+                      </div>
+
+                      {/* Status */}
+                      <div className="text-center">
+                        <p className="text-xs text-white/60 mb-1">Estado</p>
+                        <div className={`px-3 py-1 rounded-lg ${getStatusColor(apartment.status)}`}>
+                          <span className="text-sm font-semibold">{getStatusLabel(apartment.status)}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Arrow */}
+                    <ArrowRight className="h-5 w-5 text-white/40 group-hover:text-blue-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
                   </div>
-                  <Badge className={getStatusColor(apartment.status)}>
-                    {getStatusLabel(apartment.status)}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  {apartment.buildingId && (
-                    <>
-                      <div>
-                        <p className="text-white/60">Piso</p>
-                        <p className="font-medium">{apartment.floor}</p>
+
+                  {/* Mobile View - Accordion */}
+                  <div className="md:hidden">
+                    {/* Header - Always Visible */}
+                    <div 
+                      className="flex items-center justify-between p-4 cursor-pointer"
+                      onClick={() => setExpandedApartment(expandedApartment === apartment.id ? null : apartment.id)}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0">
+                          <Home className="h-4 w-4 text-blue-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-white truncate">{apartment.nomenclature}</p>
+                          <p className="text-xs text-white/60 truncate">
+                            {apartment.buildingId ? getBuildingName(apartment.buildingId) : apartment.city}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-white/60">Letra</p>
-                        <p className="font-medium">{apartment.apartmentLetter}</p>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className={`px-2 py-1 rounded-lg text-xs ${getStatusColor(apartment.status)}`}>
+                          {getStatusLabel(apartment.status)}
+                        </div>
+                        <ChevronDown 
+                          className={`h-5 w-5 text-white/60 transition-transform ${
+                            expandedApartment === apartment.id ? 'rotate-180' : ''
+                          }`}
+                        />
                       </div>
-                      {(() => {
-                        const location = getBuildingLocation(apartment.buildingId)
-                        return location ? (
-                          <div className="col-span-2">
-                            <p className="text-white/60">Ubicación</p>
-                            <p className="font-medium text-xs">{location.address}</p>
-                            <p className="font-medium text-xs text-white/70">{location.city}, {location.province}</p>
+                    </div>
+
+                    {/* Expanded Content */}
+                    {expandedApartment === apartment.id && (
+                      <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
+                        {/* Location */}
+                        <div>
+                          <p className="text-xs text-white/60 mb-1">Ubicación</p>
+                          {apartment.buildingId ? (
+                            <div>
+                              <p className="text-sm font-medium text-white">{getBuildingName(apartment.buildingId)}</p>
+                              <p className="text-xs text-white/60">Piso {apartment.floor}{apartment.apartmentLetter ? ` - ${apartment.apartmentLetter}` : ''}</p>
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-sm font-medium text-white">{apartment.fullAddress}</p>
+                              <p className="text-xs text-white/60">{apartment.city}, {apartment.province}</p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="p-3 rounded-lg bg-white/5">
+                            <p className="text-xs text-white/60 mb-1">Área</p>
+                            <p className="text-lg font-semibold text-white">{formatArea(apartment.area)}</p>
                           </div>
-                        ) : null
-                      })()}
-                    </>
-                  )}
-                  {!apartment.buildingId && apartment.city && (
-                    <div className="col-span-2">
-                      <p className="text-white/60">Ubicación</p>
-                      <p className="font-medium text-xs">{apartment.fullAddress}</p>
-                      <p className="font-medium text-xs text-white/70">{apartment.city}, {apartment.province}</p>
-                    </div>
-                  )}
-                  <div>
-                    <p className="text-white/60">Área</p>
-                    <p className="font-medium">{formatArea(apartment.area)}</p>
-                  </div>
-                  <div>
-                    <p className="text-white/60">Ambientes</p>
-                    <p className="font-medium">{formatRooms(apartment.rooms)}</p>
+                          <div className="p-3 rounded-lg bg-white/5">
+                            <p className="text-xs text-white/60 mb-1">Ambientes</p>
+                            <p className="text-lg font-semibold text-white">{formatRooms(apartment.rooms)}</p>
+                          </div>
+                        </div>
+
+                        {/* Owner */}
+                        {apartment.owner && (
+                          <div className="p-3 rounded-lg bg-white/5">
+                            <p className="text-xs text-white/60 mb-1">Propietario</p>
+                            <p className="text-sm text-white">{apartment.owner.name}</p>
+                          </div>
+                        )}
+
+                        {/* View Button */}
+                        <Button
+                          className="w-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
+                          onClick={() => handleApartmentClick(apartment.id)}
+                        >
+                          Ver Detalles
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </div>
-
-                {apartment.owner && (
-                  <div className="border-t pt-3">
-                    <div className="flex items-center space-x-2 text-sm text-white/60">
-                      <UserCircle className="h-4 w-4" />
-                      <span className="font-medium">{apartment.owner.name}</span>
-                    </div>
-                  </div>
-                )}
-
-                {apartment.saleStatus === SaleStatus.FOR_SALE && (
-                  <div className="bg-orange-50 border-none border-orange-200 rounded-lg p-2">
-                    <p className="text-xs text-orange-800 font-medium">En Venta</p>
-                  </div>
-                )}
-
-                <div className="flex space-x-2 pt-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => router.push(`/apartments/${apartment.id}`)}
-                  >
-                    Ver Detalles
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => router.push(`/apartments/${apartment.id}/edit`)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              ))}
+            </div>
+          )}
+        </GlassCardContent>
+      </GlassCard>
     </div>
   )
 }

@@ -103,7 +103,10 @@ export default function BuildingsPage() {
                   className="group relative overflow-hidden rounded-xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-200"
                 >
                   {/* Desktop View */}
-                  <div className="hidden md:flex items-center gap-4 p-4">
+                  <div 
+                    className="hidden md:flex items-center gap-4 p-4 cursor-pointer"
+                    onClick={() => handleBuildingClick(building.id)}
+                  >
                     {/* Icon and Name */}
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0">
@@ -152,38 +155,8 @@ export default function BuildingsPage() {
                       </div>
                     </div>
 
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="bg-white/5 hover:bg-white/10"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/buildings/${building.id}/edit`)
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          router.push(`/buildings/${building.id}/apartments/new`)
-                        }}
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-white/60 hover:text-blue-400"
-                        onClick={() => handleBuildingClick(building.id)}
-                      >
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </div>
+                    {/* Arrow */}
+                    <ArrowRight className="h-5 w-5 text-white/40 group-hover:text-blue-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
                   </div>
 
                   {/* Mobile View - Accordion */}
@@ -258,36 +231,14 @@ export default function BuildingsPage() {
                           <p className="text-sm text-white">{building.owner}</p>
                         </div>
 
-                        {/* Action Buttons */}
-                        <div className="grid grid-cols-3 gap-2">
-                          <Button
-                            variant="outline"
-                            className="bg-white/5 hover:bg-white/10"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              router.push(`/buildings/${building.id}/edit`)
-                            }}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              router.push(`/buildings/${building.id}/apartments/new`)
-                            }}
-                          >
-                            <Plus className="h-4 w-4 mr-1" />
-                            Unidad
-                          </Button>
-                          <Button
-                            className="bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
-                            onClick={() => handleBuildingClick(building.id)}
-                          >
-                            Ver
-                            <ArrowRight className="h-4 w-4 ml-1" />
-                          </Button>
-                        </div>
+                        {/* View Button */}
+                        <Button
+                          className="w-full bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
+                          onClick={() => handleBuildingClick(building.id)}
+                        >
+                          Ver Detalles
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
                       </div>
                     )}
                   </div>
