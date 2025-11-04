@@ -66,7 +66,7 @@ export function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
               <section className="mb-8">
                 <h3 className="text-xl font-bold text-white mb-4">1. INTRODUCCIÓN</h3>
                 <p className="text-white/80 leading-relaxed mb-4">
-                  Momento IA S.A. (en adelante, "nosotros", "nuestro" o "la Empresa") se compromete a proteger su privacidad. Esta Política de Privacidad explica cómo recopilamos, usamos, divulgamos y protegemos su información cuando utiliza Inmobiliaria Pro (la "Plataforma").
+                  Momento IA S.A. (en adelante, "nosotros", "nuestro" o "la Empresa") se compromete a proteger su privacidad. Esta Política de Privacidad explica cómo recopilamos, usamos, divulgamos y protegemos su información cuando utiliza InmoDash (la "Plataforma").
                 </p>
                 <p className="text-white/80 leading-relaxed">
                   Al utilizar nuestra Plataforma, usted acepta la recopilación y uso de información de acuerdo con esta política. Si no está de acuerdo con nuestras políticas y prácticas, no utilice la Plataforma.

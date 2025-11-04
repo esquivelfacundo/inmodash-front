@@ -64,17 +64,17 @@ export function CompanyStep({ data, updateData, onNext, onBack, submitTrigger }:
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Nombre de la Inmobiliaria */}
+        {/* Nombre de la Empresa */}
         <div className="md:col-span-2">
           <label htmlFor="companyName" className="block text-sm font-medium text-white/90 mb-2">
-            Nombre de la Inmobiliaria *
+            Nombre de la Empresa *
           </label>
           <input
             {...register('companyName')}
             type="text"
             id="companyName"
             className="w-full px-4 py-3 bg-slate-800/50 border border-white/10 rounded-lg text-white placeholder:text-white/40 focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 focus:bg-slate-800/70 transition-all"
-            placeholder="Inmobiliaria XYZ S.A."
+            placeholder="InmoDash XYZ S.A."
           />
           {errors.companyName && (
             <p className="mt-1 text-sm text-red-300">{errors.companyName.message}</p>

@@ -58,13 +58,13 @@ export function SummaryStep({ data, onNext, onBack }: SummaryStepProps) {
           </div>
         </div>
 
-        {/* Datos de la Inmobiliaria */}
+        {/* Datos de la Empresa */}
         <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-purple-500/20">
           <div className="flex items-center gap-2 mb-4">
             <div className="p-2 bg-purple-500/20 rounded-lg">
               <Building2 className="h-5 w-5 text-white" />
             </div>
-            <h3 className="text-lg font-semibold text-white">Inmobiliaria</h3>
+            <h3 className="text-lg font-semibold text-white">Empresa</h3>
           </div>
           <div className="space-y-3">
             <div>

@@ -48,9 +48,9 @@ const steps = [
   },
   {
     id: 2,
-    title: 'Inmobiliaria',
+    title: 'Empresa',
     description: 'Tu empresa',
-    headerTitle: 'Datos de la Inmobiliaria',
+    headerTitle: 'Datos de la Empresa',
     headerDescription: 'Información de tu empresa inmobiliaria',
     icon: Building2,
   },
@@ -185,8 +185,12 @@ export function MultiStepRegister() {
                 <Building2 className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-white font-semibold text-lg">Inmobiliaria</h1>
-                <p className="text-white/60 text-xs">Pro</p>
+                <h1 className="text-white font-semibold text-lg">InmoDash</h1>
+                <div className="flex items-center gap-1">
+                  <span className="px-1.5 py-0.5 text-xs font-medium bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-900 rounded-full shadow-sm">
+                    Premium
+                  </span>
+                </div>
               </div>
             </div>
           </div>

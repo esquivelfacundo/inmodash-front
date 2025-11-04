@@ -89,8 +89,12 @@ export function Sidebar() {
               <Sparkles className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-white font-semibold text-lg">Inmobiliaria</h1>
-              <p className="text-white/60 text-sm">Pro</p>
+              <h1 className="text-white font-semibold text-lg">InmoDash</h1>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 text-xs font-medium bg-gradient-to-r from-amber-400 to-yellow-500 text-amber-900 rounded-full shadow-sm">
+                  Premium
+                </span>
+              </div>
             </div>
           </div>
 

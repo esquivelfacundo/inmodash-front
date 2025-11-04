@@ -122,7 +122,7 @@ export function RepresentativeStep({ data, updateData, onNext, submitTrigger }: 
         {/* Cargo */}
         <div className="md:col-span-2">
           <label htmlFor="position" className="block text-sm font-medium text-white/90 mb-2">
-            Cargo en la Inmobiliaria *
+            Cargo en la Empresa *
           </label>
           <input
             {...register('position')}

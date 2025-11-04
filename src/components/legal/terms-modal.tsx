@@ -66,7 +66,7 @@ export function TermsModal({ isOpen, onClose }: TermsModalProps) {
               <section className="mb-8">
                 <h3 className="text-xl font-bold text-white mb-4">1. ACEPTACIÓN DE LOS TÉRMINOS</h3>
                 <p className="text-white/80 leading-relaxed mb-4">
-                  Al acceder y utilizar Inmobiliaria Pro (en adelante, "la Plataforma"), usted acepta estar legalmente vinculado por estos Términos y Condiciones. Si no está de acuerdo con alguna parte de estos términos, no debe utilizar nuestros servicios.
+                  Al acceder y utilizar InmoDash (en adelante, "la Plataforma"), usted acepta estar legalmente vinculado por estos Términos y Condiciones. Si no está de acuerdo con alguna parte de estos términos, no debe utilizar nuestros servicios.
                 </p>
                 <p className="text-white/80 leading-relaxed">
                   Estos términos constituyen un acuerdo legal vinculante entre usted (ya sea personalmente o en nombre de una entidad) y Momento IA S.A. (en adelante, "la Empresa", "nosotros" o "nuestro") con respecto al acceso y uso de la Plataforma.
