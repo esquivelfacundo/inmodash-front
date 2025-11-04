@@ -82,7 +82,7 @@ export function Sidebar() {
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         lg:flex-shrink-0
       `}>
-        <div className="h-full flex flex-col py-8 px-6 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="h-full flex flex-col py-8 px-6 lg:bg-transparent bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-12">
             <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
@@ -121,37 +121,10 @@ export function Sidebar() {
               })}
             </ul>
 
-            {/* Secondary Navigation */}
-            <div className="mt-8 pt-8 border-t border-white/10">
-              <ul className="space-y-2">
-                {secondaryNavigation.map((item) => {
-                  const isActive = pathname === item.href;
-                  return (
-                    <li key={item.name}>
-                      <Link
-                        href={item.href}
-                        onClick={closeMobileMenu}
-                        className={`
-                          flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
-                          ${
-                            isActive
-                              ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm'
-                              : 'text-white/70 hover:text-white hover:bg-white/10'
-                          }
-                        `}
-                      >
-                        <item.icon className="w-5 h-5" />
-                        {item.name}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
           </nav>
 
-          {/* User Profile */}
-          <div className="mt-8 pt-6 border-t border-white/10">
+          {/* User Profile and Settings */}
+          <div className="mt-8">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center">
                 <User className="w-5 h-5 text-white" />
@@ -165,6 +138,23 @@ export function Sidebar() {
                 </p>
               </div>
             </div>
+            
+            {/* Settings Button */}
+            <Link
+              href="/settings"
+              onClick={closeMobileMenu}
+              className={`
+                w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 mb-2
+                ${
+                  pathname === '/settings'
+                    ? 'bg-white/20 text-white shadow-lg backdrop-blur-sm'
+                    : 'text-white/70 hover:text-white hover:bg-white/10'
+                }
+              `}
+            >
+              <Settings className="w-5 h-5" />
+              Configuración
+            </Link>
             
             <button
               onClick={handleLogout}
