@@ -54,6 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check authentication status
   const checkAuth = useCallback(async () => {
     try {
+      console.log('🔥 Checking auth from domain:', window.location.hostname);
       const response = await fetch(`https://inmodash-back-production.up.railway.app/api/auth/me`, {
         method: 'GET',
         credentials: 'include',
