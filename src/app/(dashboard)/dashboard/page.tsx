@@ -507,205 +507,163 @@ export default function Dashboard() {
         </GlassCard>
       </div>
 
-      {/* Recent Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent buildings */}
-        <GlassCard className="hover:shadow-lg transition-all">
-          <GlassCardHeader className="flex flex-row items-center justify-between">
+      {/* Payments Approval Table */}
+      <GlassCard>
+        <GlassCardHeader>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <GlassCardTitle className="flex items-center gap-2 text-white">
-                <Building2 className="h-5 w-5 text-blue-400" />
-                Edificios Recientes
+                <DollarSign className="h-5 w-5" />
+                Pagos Pendientes de Aprobación
               </GlassCardTitle>
               <GlassCardDescription className="text-white/60">
-                Últimos edificios agregados
-              </GlassCardDescription>
-            </div>
-            <Link href="/buildings">
-              <Button variant="outline" size="sm" className="gap-1 bg-white/5 text-white hover:bg-white/10 hover:shadow-lg transition-all">
-                Ver todos
-                <ArrowRight className="h-3 w-3" />
-              </Button>
-            </Link>
-          </GlassCardHeader>
-          <GlassCardContent>
-            {recentBuildings.length === 0 ? (
-              <EmptyState
-                icon={Building2}
-                title="No hay edificios registrados"
-                description="Comienza creando tu primer edificio"
-                action={{
-                  label: 'Crear Edificio',
-                  onClick: () => window.location.href = '/buildings/new'
-                }}
-              />
-            ) : (
-              <div className="space-y-2">
-                {recentBuildings.map((building: any) => (
-                  <Link
-                    key={building.id}
-                    href={`/buildings/${building.id}`}
-                    className="block"
-                  >
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-blue-500/20 hover:shadow-lg transition-all group">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="p-2 rounded-lg bg-blue-500/20 group-hover:bg-blue-500/30 transition-colors">
-                          <Building2 className="h-4 w-4 text-blue-400" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-white group-hover:text-blue-400 transition-colors">
-                            {building.name}
-                          </h4>
-                          <p className="text-sm text-white/60 flex items-center gap-2 mt-1">
-                            <span>{building.address}</span>
-                            <Badge variant="outline" size="sm">
-                              {building.apartments?.length || 0} dptos
-                            </Badge>
-                          </p>
-                        </div>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-white/40 group-hover:text-blue-400 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </GlassCardContent>
-        </GlassCard>
-
-        {/* Recent Apartments */}
-        <GlassCard className="hover:shadow-lg transition-all">
-          <GlassCardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <GlassCardTitle className="flex items-center gap-2 text-white">
-                <Home className="h-5 w-5 text-green-400" />
-                Departamentos Recientes
-              </GlassCardTitle>
-              <GlassCardDescription className="text-white/60">
-                Últimos departamentos agregados
-              </GlassCardDescription>
-            </div>
-          </GlassCardHeader>
-          <GlassCardContent>
-            {recentApartments.length === 0 ? (
-              <EmptyState
-                icon={Home}
-                title="No hay departamentos registrados"
-                description="Primero crea un edificio para agregar departamentos"
-              />
-            ) : (
-              <div className="space-y-2">
-                {recentApartments.map((apartment: any) => (
-                  <Link
-                    key={apartment.id}
-                    href={`/apartments/${apartment.id}`}
-                    className="block"
-                  >
-                    <div className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-green-500/20 hover:shadow-lg transition-all group">
-                      <div className="flex items-center gap-3 flex-1">
-                        <div className="p-2 rounded-lg bg-green-500/20 group-hover:bg-green-500/30 transition-colors">
-                          <Home className="h-4 w-4 text-green-400" />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-semibold text-white group-hover:text-green-400 transition-colors">
-                            {apartment.building?.name} - {apartment.nomenclature}
-                          </h4>
-                          <div className="flex items-center gap-2 mt-1">
-                            <p className="text-sm text-white/60">
-                              {apartment.area ? formatArea(apartment.area) : 'N/A'} • {apartment.rooms ? formatRooms(apartment.rooms) : 'N/A'}
-                            </p>
-                            <Badge variant="outline" size="sm">
-                              {apartment.uniqueId}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-white/40 group-hover:text-green-400 group-hover:translate-x-1 transition-all" />
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </GlassCardContent>
-        </GlassCard>
-
-        {/* Recent Payments */}
-        <GlassCard className="hover:shadow-lg transition-all">
-          <GlassCardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <GlassCardTitle className="flex items-center gap-2 text-white">
-                <DollarSign className="h-5 w-5 text-purple-400" />
-                Pagos Recientes
-              </GlassCardTitle>
-              <GlassCardDescription className="text-white/60">
-                Últimos pagos registrados
+                Gestiona los pagos registrados por los inquilinos
               </GlassCardDescription>
             </div>
             <Link href="/payments">
-              <Button variant="outline" size="sm" className="gap-1 bg-white/5 text-white hover:bg-white/10 hover:shadow-lg transition-all">
-                Ver todos
-                <ArrowRight className="h-3 w-3" />
+              <Button variant="outline" className="gap-2 bg-white/5 text-white hover:bg-white/10">
+                <DollarSign className="h-4 w-4" />
+                Ver Todos los Pagos
               </Button>
             </Link>
-          </GlassCardHeader>
-          <GlassCardContent>
-            {recentPayments.length === 0 ? (
-              <EmptyState
-                icon={DollarSign}
-                title="No hay pagos registrados"
-                description="Los pagos aparecerán aquí cuando se registren"
-              />
-            ) : (
-              <div className="space-y-2">
-                {recentPayments.map((payment: any) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between p-4 bg-white/5 rounded-lg hover:bg-purple-500/20 hover:shadow-lg transition-all"
-                  >
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className={`p-2 rounded-lg ${
-                        payment.status === PaymentStatus.PAID 
-                          ? 'bg-green-500/20' 
-                          : payment.status === PaymentStatus.OVERDUE
-                          ? 'bg-red-500/20'
-                          : 'bg-yellow-500/20'
-                      }`}>
-                        {payment.status === PaymentStatus.PAID ? (
-                          <CheckCircle className="h-4 w-4 text-green-400" />
-                        ) : payment.status === PaymentStatus.OVERDUE ? (
-                          <AlertCircle className="h-4 w-4 text-red-400" />
-                        ) : (
-                          <Clock className="h-4 w-4 text-yellow-400" />
-                        )}
+          </div>
+        </GlassCardHeader>
+        <GlassCardContent>
+          {/* Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/10">
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Inquilino</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Unidad</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Monto a Pagar</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Comprobante</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Estado</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {recentPayments.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="py-12 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <DollarSign className="h-12 w-12 text-white/20" />
+                        <p className="text-white font-medium">No hay pagos registrados</p>
+                        <p className="text-white/60 text-sm">Los pagos aparecerán aquí cuando se registren</p>
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-white">
-                          ${payment.amount.toLocaleString('es-AR')}
-                        </h4>
-                        <p className="text-sm text-white/60">
-                          {format(new Date(payment.month), 'MMMM yyyy', { locale: es })}
-                        </p>
-                      </div>
-                    </div>
-                    <Badge 
-                      className={`${
-                        payment.status === PaymentStatus.PAID 
-                          ? 'bg-green-500/20 text-green-300' 
-                          : payment.status === PaymentStatus.OVERDUE
-                          ? 'bg-red-500/20 text-red-300'
-                          : 'bg-yellow-500/20 text-yellow-300'
-                      }`}
+                    </td>
+                  </tr>
+                ) : (
+                  recentPayments.map((payment: any) => (
+                    <tr
+                      key={payment.id}
+                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
                     >
-                      {payment.status === PaymentStatus.PAID ? 'Pagado' : 
-                       payment.status === PaymentStatus.OVERDUE ? 'Vencido' : 'Pendiente'}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            )}
-          </GlassCardContent>
-        </GlassCard>
-      </div>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 rounded-lg bg-purple-500/20">
+                            <Users className="h-4 w-4 text-purple-400" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-white">
+                              {payment.tenant?.name || 'Sin inquilino'}
+                            </p>
+                            <p className="text-sm text-white/60">
+                              {payment.tenant?.email || '-'}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-blue-400" />
+                          <div>
+                            <p className="font-medium text-white">
+                              {payment.apartment?.building?.name || 'Propiedad'}
+                            </p>
+                            <p className="text-sm text-white/60">
+                              {payment.apartment?.nomenclature || '-'}
+                            </p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <div className="font-semibold text-green-400">
+                          ${payment.amount?.toLocaleString('es-AR') || 0}
+                        </div>
+                        <p className="text-xs text-white/60 mt-1">
+                          {format(new Date(payment.month), 'MMM yyyy', { locale: es })}
+                        </p>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        {payment.receiptUrl ? (
+                          <a
+                            href={payment.receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
+                          >
+                            <FileText className="h-4 w-4" />
+                            <span className="text-sm">Ver</span>
+                          </a>
+                        ) : (
+                          <span className="text-white/40 text-sm">Sin comprobante</span>
+                        )}
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <Badge 
+                          className={`${
+                            payment.status === PaymentStatus.PAID 
+                              ? 'bg-green-500/20 text-green-300' 
+                              : payment.status === PaymentStatus.OVERDUE
+                              ? 'bg-red-500/20 text-red-300'
+                              : 'bg-yellow-500/20 text-yellow-300'
+                          }`}
+                        >
+                          {payment.status === PaymentStatus.PAID ? 'Aprobado' : 
+                           payment.status === PaymentStatus.OVERDUE ? 'Rechazado' : 'Pendiente'}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          {payment.status === PaymentStatus.PENDING && (
+                            <>
+                              <Button
+                                size="sm"
+                                className="bg-green-500/20 text-green-300 hover:bg-green-500/30"
+                                onClick={() => {
+                                  // TODO: Implement approve payment
+                                  console.log('Approve payment:', payment.id)
+                                }}
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                                onClick={() => {
+                                  // TODO: Implement reject payment
+                                  console.log('Reject payment:', payment.id)
+                                }}
+                              >
+                                <AlertCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                          {payment.status !== PaymentStatus.PENDING && (
+                            <span className="text-white/40 text-sm">-</span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        </GlassCardContent>
+      </GlassCard>
     </div>
   )
 }
