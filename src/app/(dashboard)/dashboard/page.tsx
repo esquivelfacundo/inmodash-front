@@ -33,6 +33,7 @@ export default function Dashboard() {
   const { payments: overduePayments } = useOverduePayments()
   const [propertyFilter, setPropertyFilter] = useState<PropertyFilter>('all')
   const [expandedBuilding, setExpandedBuilding] = useState<number | null>(null)
+  const [expandedPayment, setExpandedPayment] = useState<number | null>(null)
 
   const loading = statsLoading || buildingsLoading || apartmentsLoading || contractsLoading || paymentsLoading
 
@@ -187,141 +188,261 @@ export default function Dashboard() {
           </div>
         </GlassCardHeader>
         <GlassCardContent>
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              {recentPayments.length > 0 && (
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Inquilino</th>
-                    <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Unidad</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Monto a Pagar</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Comprobante</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Estado</th>
-                    <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Acciones</th>
-                  </tr>
-                </thead>
-              )}
-              <tbody>
-                {recentPayments.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center">
-                      <div className="flex flex-col items-center gap-3">
-                        <DollarSign className="h-12 w-12 text-white/20" />
-                        <p className="text-white font-medium">No hay pagos registrados</p>
-                        <p className="text-white/60 text-sm">Los pagos aparecerán aquí cuando se registren</p>
+          {/* Payments List */}
+          {recentPayments.length === 0 ? (
+            <div className="py-12 text-center">
+              <DollarSign className="h-12 w-12 text-white/20 mx-auto mb-3" />
+              <p className="text-white font-medium">No hay pagos registrados</p>
+              <p className="text-white/60 text-sm mt-1">Los pagos aparecerán aquí cuando se registren</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {recentPayments.map((payment: any) => (
+                <div
+                  key={payment.id}
+                  className="group relative overflow-hidden rounded-xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-200"
+                >
+                  {/* Desktop View */}
+                  <div className="hidden md:flex items-center gap-4 p-4">
+                    {/* Inquilino */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="p-2 rounded-lg bg-purple-500/20 flex-shrink-0">
+                        <Users className="h-4 w-4 text-purple-400" />
                       </div>
-                    </td>
-                  </tr>
-                ) : (
-                  recentPayments.map((payment: any) => (
-                    <tr
-                      key={payment.id}
-                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
-                    >
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-purple-500/20">
-                            <Users className="h-4 w-4 text-purple-400" />
-                          </div>
-                          <div>
-                            <p className="font-medium text-white">
-                              {payment.tenant?.name || 'Sin inquilino'}
-                            </p>
-                            <p className="text-sm text-white/60">
-                              {payment.tenant?.email || '-'}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-blue-400" />
-                          <div>
-                            <p className="font-medium text-white">
-                              {payment.apartment?.building?.name || 'Propiedad'}
-                            </p>
-                            <p className="text-sm text-white/60">
-                              {payment.apartment?.nomenclature || '-'}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <div className="font-semibold text-green-400">
+                      <div className="min-w-0">
+                        <p className="font-medium text-white truncate">
+                          {payment.tenant?.name || 'Sin inquilino'}
+                        </p>
+                        <p className="text-sm text-white/60 truncate">
+                          {payment.tenant?.email || '-'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Unidad */}
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <Building2 className="h-4 w-4 text-blue-400 flex-shrink-0" />
+                      <div className="min-w-0">
+                        <p className="font-medium text-white truncate">
+                          {payment.apartment?.building?.name || 'Propiedad'}
+                        </p>
+                        <p className="text-sm text-white/60 truncate">
+                          {payment.apartment?.nomenclature || '-'}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Monto */}
+                    <div className="text-center flex-shrink-0">
+                      <p className="text-xs text-white/60 mb-1">Monto</p>
+                      <div className="px-3 py-1 rounded-lg bg-green-500/20">
+                        <p className="font-semibold text-green-300">
                           ${payment.amount?.toLocaleString('es-AR') || 0}
-                        </div>
-                        <p className="text-xs text-white/60 mt-1">
+                        </p>
+                        <p className="text-xs text-green-400/60">
                           {format(new Date(payment.month), 'MMM yyyy', { locale: es })}
                         </p>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        {payment.receiptUrl ? (
-                          <a
-                            href={payment.receiptUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
-                          >
-                            <FileText className="h-4 w-4" />
-                            <span className="text-sm">Ver</span>
-                          </a>
-                        ) : (
-                          <span className="text-white/40 text-sm">Sin comprobante</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <Badge 
-                          className={`${
-                            payment.status === PaymentStatus.PAID 
-                              ? 'bg-green-500/20 text-green-300' 
-                              : payment.status === PaymentStatus.OVERDUE
-                              ? 'bg-red-500/20 text-red-300'
-                              : 'bg-yellow-500/20 text-yellow-300'
-                          }`}
+                      </div>
+                    </div>
+
+                    {/* Comprobante */}
+                    <div className="text-center flex-shrink-0">
+                      <p className="text-xs text-white/60 mb-1">Comprobante</p>
+                      {payment.receiptUrl ? (
+                        <a
+                          href={payment.receiptUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-blue-500/20 text-blue-300 hover:bg-blue-500/30 transition-colors"
                         >
+                          <FileText className="h-3 w-3" />
+                          <span className="text-sm">Ver</span>
+                        </a>
+                      ) : (
+                        <span className="text-white/40 text-sm">Sin comprobante</span>
+                      )}
+                    </div>
+
+                    {/* Estado */}
+                    <div className="text-center flex-shrink-0">
+                      <p className="text-xs text-white/60 mb-1">Estado</p>
+                      <div className={`px-3 py-1 rounded-lg ${
+                        payment.status === PaymentStatus.PAID 
+                          ? 'bg-green-500/20' 
+                          : payment.status === PaymentStatus.OVERDUE
+                          ? 'bg-red-500/20'
+                          : 'bg-yellow-500/20'
+                      }`}>
+                        <span className={`text-sm font-semibold ${
+                          payment.status === PaymentStatus.PAID 
+                            ? 'text-green-300' 
+                            : payment.status === PaymentStatus.OVERDUE
+                            ? 'text-red-300'
+                            : 'text-yellow-300'
+                        }`}>
                           {payment.status === PaymentStatus.PAID ? 'Aprobado' : 
                            payment.status === PaymentStatus.OVERDUE ? 'Rechazado' : 'Pendiente'}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center justify-center gap-2">
-                          {payment.status === PaymentStatus.PENDING && (
-                            <>
-                              <Button
-                                size="sm"
-                                className="bg-green-500/20 text-green-300 hover:bg-green-500/30"
-                                onClick={() => {
-                                  // TODO: Implement approve payment
-                                  console.log('Approve payment:', payment.id)
-                                }}
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                                onClick={() => {
-                                  // TODO: Implement reject payment
-                                  console.log('Reject payment:', payment.id)
-                                }}
-                              >
-                                <AlertCircle className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                          {payment.status !== PaymentStatus.PENDING && (
-                            <span className="text-white/40 text-sm">-</span>
-                          )}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Acciones */}
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {payment.status === PaymentStatus.PENDING && (
+                        <>
+                          <Button
+                            size="sm"
+                            className="bg-green-500/20 text-green-300 hover:bg-green-500/30"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              // TODO: Implement approve payment
+                              console.log('Approve payment:', payment.id)
+                            }}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="bg-red-500/20 text-red-300 hover:bg-red-500/30 border-red-500/30"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              // TODO: Implement reject payment
+                              console.log('Reject payment:', payment.id)
+                            }}
+                          >
+                            <AlertCircle className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                      {payment.status !== PaymentStatus.PENDING && (
+                        <span className="text-white/40 text-sm">-</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Mobile View - Accordion */}
+                  <div className="md:hidden">
+                    {/* Header - Always Visible */}
+                    <div 
+                      className="flex items-center justify-between p-4 cursor-pointer"
+                      onClick={() => setExpandedPayment(expandedPayment === payment.id ? null : payment.id)}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="p-2 rounded-lg bg-purple-500/20 flex-shrink-0">
+                          <Users className="h-4 w-4 text-purple-400" />
                         </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-white truncate">
+                            {payment.tenant?.name || 'Sin inquilino'}
+                          </p>
+                          <p className="text-xs text-white/60 truncate">
+                            ${payment.amount?.toLocaleString('es-AR') || 0}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className={`px-2 py-1 rounded-lg text-xs ${
+                          payment.status === PaymentStatus.PAID 
+                            ? 'bg-green-500/20 text-green-300' 
+                            : payment.status === PaymentStatus.OVERDUE
+                            ? 'bg-red-500/20 text-red-300'
+                            : 'bg-yellow-500/20 text-yellow-300'
+                        }`}>
+                          {payment.status === PaymentStatus.PAID ? 'Aprobado' : 
+                           payment.status === PaymentStatus.OVERDUE ? 'Rechazado' : 'Pendiente'}
+                        </div>
+                        <ChevronDown 
+                          className={`h-5 w-5 text-white/60 transition-transform ${
+                            expandedPayment === payment.id ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Expanded Content */}
+                    {expandedPayment === payment.id && (
+                      <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
+                        {/* Unidad */}
+                        <div>
+                          <p className="text-xs text-white/60 mb-1">Unidad</p>
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-blue-400" />
+                            <div>
+                              <p className="text-sm font-medium text-white">
+                                {payment.apartment?.building?.name || 'Propiedad'}
+                              </p>
+                              <p className="text-xs text-white/60">
+                                {payment.apartment?.nomenclature || '-'}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Info Grid */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="p-3 rounded-lg bg-green-500/10">
+                            <p className="text-xs text-green-400/80 mb-1">Monto</p>
+                            <p className="text-lg font-semibold text-green-300">
+                              ${payment.amount?.toLocaleString('es-AR') || 0}
+                            </p>
+                            <p className="text-xs text-green-400/60 mt-1">
+                              {format(new Date(payment.month), 'MMM yyyy', { locale: es })}
+                            </p>
+                          </div>
+                          <div className="p-3 rounded-lg bg-white/5">
+                            <p className="text-xs text-white/60 mb-1">Comprobante</p>
+                            {payment.receiptUrl ? (
+                              <a
+                                href={payment.receiptUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300"
+                              >
+                                <FileText className="h-4 w-4" />
+                                <span className="text-sm">Ver</span>
+                              </a>
+                            ) : (
+                              <span className="text-white/40 text-sm">Sin archivo</span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        {payment.status === PaymentStatus.PENDING && (
+                          <div className="grid grid-cols-2 gap-3">
+                            <Button
+                              className="w-full bg-green-500/20 text-green-300 hover:bg-green-500/30"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                // TODO: Implement approve payment
+                                console.log('Approve payment:', payment.id)
+                              }}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Aprobar
+                            </Button>
+                            <Button
+                              variant="outline"
+                              className="w-full bg-red-500/20 text-red-300 hover:bg-red-500/30 border-red-500/30"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                // TODO: Implement reject payment
+                                console.log('Reject payment:', payment.id)
+                              }}
+                            >
+                              <AlertCircle className="h-4 w-4 mr-2" />
+                              Rechazar
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </GlassCardContent>
       </GlassCard>
 
