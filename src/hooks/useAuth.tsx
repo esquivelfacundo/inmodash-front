@@ -27,7 +27,7 @@ export interface AuthState {
 export interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
   logout: () => Promise<void>;
-  register: (name: string, email: string, password: string) => Promise<boolean>;
+  register: (userData: any) => Promise<boolean>;
   refreshAuth: () => Promise<void>;
   clearError: () => void;
 }
@@ -206,9 +206,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Register function
   const register = useCallback(async (
-    name: string,
-    email: string,
-    password: string
+    userData: any
   ): Promise<boolean> => {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
@@ -216,6 +214,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const apiUrl = 'https://inmodash-back-production.up.railway.app';
       console.log('🔥 REGISTRATION ATTEMPT - API URL (hardcoded):', apiUrl);
       console.log('🔥 FULL REGISTRATION URL:', `${apiUrl}/api/auth/register`);
+      console.log('🔥 REGISTRATION DATA:', userData);
       console.log('🔥 TIMESTAMP:', new Date().toISOString());
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
@@ -223,12 +222,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          confirmPassword: password,
-        }),
+        body: JSON.stringify(userData),
       });
 
       console.log('Response status:', response.status);

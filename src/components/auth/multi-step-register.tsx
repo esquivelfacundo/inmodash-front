@@ -104,12 +104,14 @@ export function MultiStepRegister() {
     setIsLoading(true)
     try {
       console.log('🔥 MULTI-STEP REGISTER - Using useAuth hook')
+      console.log('🔥 FORM DATA:', formData)
       
       if (!formData.name || !formData.email || !formData.password) {
         throw new Error('Faltan datos requeridos')
       }
 
-      const success = await registerUser(formData.name, formData.email, formData.password)
+      // Enviar todos los datos del formulario
+      const success = await registerUser(formData)
       
       if (success) {
         console.log('🔥 Registration successful via useAuth')
