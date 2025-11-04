@@ -8,7 +8,7 @@ import { verifyToken } from '@/lib/auth/jwt';
 
 // Routes that require authentication
 const PROTECTED_ROUTES = [
-  '/dashboard',
+  '/dashboard*', // All dashboard routes
   '/api/secure',
 ];
 
@@ -91,30 +91,36 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // Check authentication - simplified approach for mobile compatibility
+    // Check authentication - simplified approach
     let isAuthenticated = false;
     
     // Get auth token from cookies first
     const authToken = request.cookies.get('auth-token')?.value;
     
     if (authToken) {
-      try {
-        // Try to decode JWT to check if it's valid and not expired
-        const payload = JSON.parse(atob(authToken.split('.')[1]));
-        const now = Math.floor(Date.now() / 1000);
-        
-        // Check if token is not expired
-        if (payload.exp && payload.exp > now) {
-          isAuthenticated = true;
-          console.log('Auth check: Token valid', { path: pathname, exp: payload.exp, now });
-        } else {
-          console.log('Auth check: Token expired', { path: pathname, exp: payload.exp, now });
+      // Simply check if token exists and has proper JWT format
+      // Let the backend handle detailed validation
+      const tokenParts = authToken.split('.');
+      if (tokenParts.length === 3) {
+        try {
+          const payload = JSON.parse(atob(tokenParts[1]));
+          const now = Math.floor(Date.now() / 1000);
+          
+          // Only check basic expiration, be more lenient
+          if (payload.exp && payload.exp > (now - 60)) { // 1 minute grace period
+            isAuthenticated = true;
+            console.log('Middleware: Token valid', { path: pathname, exp: payload.exp, now });
+          } else {
+            console.log('Middleware: Token expired', { path: pathname, exp: payload.exp, now });
+          }
+        } catch (error) {
+          console.log('Middleware: Token decode error', { path: pathname, error: String(error) });
         }
-      } catch (error) {
-        console.log('Auth check: Invalid token', { path: pathname, error: String(error) });
+      } else {
+        console.log('Middleware: Invalid token format', { path: pathname });
       }
     } else {
-      console.log('Auth check: No token found', { path: pathname });
+      console.log('Middleware: No token found', { path: pathname });
     }
     const isProtectedRoute = matchesPath(pathname, PROTECTED_ROUTES);
     const isAuthRoute = matchesPath(pathname, AUTH_ROUTES);
