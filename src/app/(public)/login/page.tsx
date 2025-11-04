@@ -87,7 +87,7 @@ function LoginForm() {
           Iniciar Sesión
         </h2>
         <p className="mt-2 text-sm text-white/70">
-          Accede a tu cuenta de Inmobiliaria Pro
+          Accede a tu cuenta de InmoDash
         </p>
       </div>
 

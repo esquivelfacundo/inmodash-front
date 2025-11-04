@@ -289,7 +289,7 @@ export function TermsModal({ isOpen, onClose }: TermsModalProps) {
 
               <div className="mt-8 pt-6 border-t border-white/10">
                 <p className="text-white/60 text-sm">
-                  Al utilizar Inmobiliaria Pro, usted reconoce que ha leído, entendido y acepta estar sujeto a estos Términos y Condiciones.
+                  Al utilizar InmoDash, usted reconoce que ha leído, entendido y acepta estar sujeto a estos Términos y Condiciones.
                 </p>
               </div>
             </div>

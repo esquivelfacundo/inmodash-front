@@ -288,7 +288,7 @@ export function PrivacyModal({ isOpen, onClose }: PrivacyModalProps) {
 
               <div className="mt-8 pt-6 border-t border-white/10">
                 <p className="text-white/60 text-sm">
-                  Al utilizar Inmobiliaria Pro, usted reconoce que ha leído y comprendido esta Política de Privacidad y acepta el procesamiento de su información personal como se describe aquí.
+                  Al utilizar InmoDash, usted reconoce que ha leído y comprendido esta Política de Privacidad y acepta el procesamiento de su información personal como se describe aquí.
                 </p>
               </div>
             </div>

@@ -29,7 +29,7 @@ export const PublicNavbar = () => {
             </div>
             <div className="flex flex-col">
               <span className="text-lg font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                Inmobiliaria Pro
+                InmoDash
               </span>
               <span className="text-xs text-white/60 -mt-1 flex items-center gap-1">
                 <Sparkles className="h-2.5 w-2.5" />

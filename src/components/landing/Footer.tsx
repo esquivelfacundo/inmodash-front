@@ -16,7 +16,7 @@ export const Footer = () => {
               <div className="p-2 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg">
                 <Building2 className="h-5 w-5 text-white" />
               </div>
-              <span className="text-lg font-bold text-white">Inmobiliaria Pro</span>
+              <span className="text-lg font-bold text-white">InmoDash</span>
             </div>
             <p className="text-sm text-white/60 mb-4">
               La plataforma todo-en-uno para inmobiliarias modernas. Automatiza, optimiza y crece con IA.
@@ -121,7 +121,7 @@ export const Footer = () => {
         <div className="pt-8 border-t border-white/10">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-white/60">
-              © {currentYear} Inmobiliaria Pro. Todos los derechos reservados.
+              © {currentYear} InmoDash. Todos los derechos reservados.
             </p>
             <div className="flex gap-6">
               <a href="#" className="text-sm text-white/60 hover:text-cyan-400 transition-colors">
