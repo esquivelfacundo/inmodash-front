@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
+import { NumberInput } from './NumberInput'
 import { propertySpecifications, type SpecificationField } from '@/config/property-specifications'
 import { Check, X } from 'lucide-react'
 
@@ -30,8 +31,24 @@ export function PropertySpecifications({
 
   const handleChange = (key: string, newValue: any) => {
     const updated = { ...specs, [key]: newValue }
+    
+    // Lógica condicional: si cochera es "No", resetear espacios de cochera
+    if (key === 'garage' && newValue === false) {
+      updated.garageSpaces = 0
+    }
+    
     setSpecs(updated)
     onChange?.(updated)
+  }
+
+  // Función para determinar si un campo debe mostrarse
+  const shouldShowField = (field: SpecificationField): boolean => {
+    // Si cochera es false, no mostrar espacios de cochera
+    if (field.key === 'garageSpaces' && specs.garage === false) {
+      return false
+    }
+    
+    return true
   }
 
   if (fields.length === 0) {
@@ -99,7 +116,7 @@ export function PropertySpecifications({
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {fields.map((field) => (
+          {fields.filter(shouldShowField).map((field) => (
             <div key={field.key} className="space-y-2">
               <Label htmlFor={field.key}>
                 {field.label}
@@ -136,15 +153,12 @@ export function PropertySpecifications({
               )}
 
               {field.type === 'number' && (
-                <Input
-                  id={field.key}
-                  type="number"
-                  min={field.min}
-                  max={field.max}
-                  step={field.key === 'height' ? '0.1' : '1'}
+                <NumberInput
                   value={specs[field.key] ?? field.defaultValue ?? 0}
-                  onChange={(e) => handleChange(field.key, parseFloat(e.target.value) || 0)}
-                  placeholder={`Ej: ${field.defaultValue || 0}`}
+                  onChange={(value) => handleChange(field.key, value)}
+                  min={field.min ?? 0}
+                  max={field.max ?? 99}
+                  step={field.key === 'height' ? 0.1 : 1}
                 />
               )}
 
