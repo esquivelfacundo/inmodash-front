@@ -10,6 +10,11 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
   
+  // Force rebuild by changing config
+  generateBuildId: async () => {
+    return 'railway-fix-' + Date.now()
+  },
+  
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
