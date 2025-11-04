@@ -164,137 +164,156 @@ export default function Dashboard() {
         />
       </div>
 
-      {/* Buildings Table */}
+      {/* Payments Approval Table */}
       <GlassCard>
         <GlassCardHeader>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <GlassCardTitle className="flex items-center gap-2 text-white">
-                <Building2 className="h-5 w-5" />
-                Edificios y Propiedades
+                <DollarSign className="h-5 w-5" />
+                Pagos Pendientes de Aprobación
               </GlassCardTitle>
               <GlassCardDescription className="text-white/60">
-                Vista general de todas tus propiedades
+                Gestiona los pagos registrados por los inquilinos
               </GlassCardDescription>
             </div>
-            <Link href="/buildings/new">
-              <Button className="gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
-                <Plus className="h-4 w-4" />
-                Nuevo Edificio
+            <Link href="/payments">
+              <Button variant="outline" className="gap-2 bg-white/5 text-white hover:bg-white/10">
+                <DollarSign className="h-4 w-4" />
+                Ver Todos los Pagos
               </Button>
             </Link>
           </div>
         </GlassCardHeader>
         <GlassCardContent>
-          {/* Filters */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            <Button
-              variant={propertyFilter === 'all' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPropertyFilter('all')}
-              className={propertyFilter === 'all' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
-            >
-              Todos
-            </Button>
-            <Button
-              variant={propertyFilter === 'departamentos' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPropertyFilter('departamentos')}
-              className={propertyFilter === 'departamentos' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
-            >
-              <Building2 className="h-3 w-3 mr-1" />
-              Departamentos
-            </Button>
-            <Button
-              variant={propertyFilter === 'casas' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPropertyFilter('casas')}
-              className={propertyFilter === 'casas' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
-            >
-              <Home className="h-3 w-3 mr-1" />
-              Casas
-            </Button>
-            <Button
-              variant={propertyFilter === 'cocheras' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPropertyFilter('cocheras')}
-              className={propertyFilter === 'cocheras' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
-            >
-              <MapPin className="h-3 w-3 mr-1" />
-              Cocheras
-            </Button>
-            <Button
-              variant={propertyFilter === 'locales' ? 'default' : 'outline'}
-              size="sm"
-              onClick={() => setPropertyFilter('locales')}
-              className={propertyFilter === 'locales' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
-            >
-              <Building2 className="h-3 w-3 mr-1" />
-              Locales Comerciales
-            </Button>
-          </div>
-
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead>
-                <tr className="border-b border-white/10">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Nombre</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Dirección</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Unidades</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Disponibles</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Alquiladas</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Próximas a liberarse</th>
-                </tr>
-              </thead>
+              {recentPayments.length > 0 && (
+                <thead>
+                  <tr className="border-b border-white/10">
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Inquilino</th>
+                    <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Unidad</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Monto a Pagar</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Comprobante</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Estado</th>
+                    <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Acciones</th>
+                  </tr>
+                </thead>
+              )}
               <tbody>
-                {filteredBuildings.length === 0 ? (
+                {recentPayments.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-8 text-center text-white/60">
-                      No hay edificios registrados
+                    <td colSpan={6} className="py-12 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <DollarSign className="h-12 w-12 text-white/20" />
+                        <p className="text-white font-medium">No hay pagos registrados</p>
+                        <p className="text-white/60 text-sm">Los pagos aparecerán aquí cuando se registren</p>
+                      </div>
                     </td>
                   </tr>
                 ) : (
-                  filteredBuildings.map((building) => (
+                  recentPayments.map((payment: any) => (
                     <tr
-                      key={building.id}
-                      onClick={() => handleBuildingClick(building.id)}
-                      className="border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors"
+                      key={payment.id}
+                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
                     >
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-blue-500/20">
-                            <Building2 className="h-4 w-4 text-blue-400" />
+                          <div className="p-2 rounded-lg bg-purple-500/20">
+                            <Users className="h-4 w-4 text-purple-400" />
                           </div>
-                          <span className="font-medium text-white">{building.name}</span>
+                          <div>
+                            <p className="font-medium text-white">
+                              {payment.tenant?.name || 'Sin inquilino'}
+                            </p>
+                            <p className="text-sm text-white/60">
+                              {payment.tenant?.email || '-'}
+                            </p>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-4 px-4 text-white/70">
-                        {building.address}, {building.city}
+                      <td className="py-4 px-4">
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-4 w-4 text-blue-400" />
+                          <div>
+                            <p className="font-medium text-white">
+                              {payment.apartment?.building?.name || 'Propiedad'}
+                            </p>
+                            <p className="text-sm text-white/60">
+                              {payment.apartment?.nomenclature || '-'}
+                            </p>
+                          </div>
+                        </div>
                       </td>
                       <td className="py-4 px-4 text-center">
-                        <Badge variant="outline" className="bg-white/5">
-                          {building.totalUnits}
-                        </Badge>
+                        <div className="font-semibold text-green-400">
+                          ${payment.amount?.toLocaleString('es-AR') || 0}
+                        </div>
+                        <p className="text-xs text-white/60 mt-1">
+                          {format(new Date(payment.month), 'MMM yyyy', { locale: es })}
+                        </p>
                       </td>
                       <td className="py-4 px-4 text-center">
-                        <Badge className="bg-green-500/20 text-green-300">
-                          {building.available}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <Badge className="bg-blue-500/20 text-blue-300">
-                          {building.rented}
-                        </Badge>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        {building.expiringSoon > 0 ? (
-                          <Badge className="bg-orange-500/20 text-orange-300">
-                            {building.expiringSoon}
-                          </Badge>
+                        {payment.receiptUrl ? (
+                          <a
+                            href={payment.receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
+                          >
+                            <FileText className="h-4 w-4" />
+                            <span className="text-sm">Ver</span>
+                          </a>
                         ) : (
-                          <span className="text-white/40">-</span>
+                          <span className="text-white/40 text-sm">Sin comprobante</span>
                         )}
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <Badge 
+                          className={`${
+                            payment.status === PaymentStatus.PAID 
+                              ? 'bg-green-500/20 text-green-300' 
+                              : payment.status === PaymentStatus.OVERDUE
+                              ? 'bg-red-500/20 text-red-300'
+                              : 'bg-yellow-500/20 text-yellow-300'
+                          }`}
+                        >
+                          {payment.status === PaymentStatus.PAID ? 'Aprobado' : 
+                           payment.status === PaymentStatus.OVERDUE ? 'Rechazado' : 'Pendiente'}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          {payment.status === PaymentStatus.PENDING && (
+                            <>
+                              <Button
+                                size="sm"
+                                className="bg-green-500/20 text-green-300 hover:bg-green-500/30"
+                                onClick={() => {
+                                  // TODO: Implement approve payment
+                                  console.log('Approve payment:', payment.id)
+                                }}
+                              >
+                                <CheckCircle className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                                onClick={() => {
+                                  // TODO: Implement reject payment
+                                  console.log('Reject payment:', payment.id)
+                                }}
+                              >
+                                <AlertCircle className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                          {payment.status !== PaymentStatus.PENDING && (
+                            <span className="text-white/40 text-sm">-</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))
@@ -507,154 +526,137 @@ export default function Dashboard() {
         </GlassCard>
       </div>
 
-      {/* Payments Approval Table */}
+      {/* Buildings Table */}
       <GlassCard>
         <GlassCardHeader>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <GlassCardTitle className="flex items-center gap-2 text-white">
-                <DollarSign className="h-5 w-5" />
-                Pagos Pendientes de Aprobación
+                <Building2 className="h-5 w-5" />
+                Edificios y Propiedades
               </GlassCardTitle>
               <GlassCardDescription className="text-white/60">
-                Gestiona los pagos registrados por los inquilinos
+                Vista general de todas tus propiedades
               </GlassCardDescription>
             </div>
-            <Link href="/payments">
-              <Button variant="outline" className="gap-2 bg-white/5 text-white hover:bg-white/10">
-                <DollarSign className="h-4 w-4" />
-                Ver Todos los Pagos
+            <Link href="/buildings/new">
+              <Button className="gap-2 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700">
+                <Plus className="h-4 w-4" />
+                Nuevo Edificio
               </Button>
             </Link>
           </div>
         </GlassCardHeader>
         <GlassCardContent>
+          {/* Filters */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            <Button
+              variant={propertyFilter === 'all' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPropertyFilter('all')}
+              className={propertyFilter === 'all' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+            >
+              Todos
+            </Button>
+            <Button
+              variant={propertyFilter === 'departamentos' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPropertyFilter('departamentos')}
+              className={propertyFilter === 'departamentos' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+            >
+              <Building2 className="h-3 w-3 mr-1" />
+              Departamentos
+            </Button>
+            <Button
+              variant={propertyFilter === 'casas' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPropertyFilter('casas')}
+              className={propertyFilter === 'casas' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+            >
+              <Home className="h-3 w-3 mr-1" />
+              Casas
+            </Button>
+            <Button
+              variant={propertyFilter === 'cocheras' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPropertyFilter('cocheras')}
+              className={propertyFilter === 'cocheras' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+            >
+              <MapPin className="h-3 w-3 mr-1" />
+              Cocheras
+            </Button>
+            <Button
+              variant={propertyFilter === 'locales' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setPropertyFilter('locales')}
+              className={propertyFilter === 'locales' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+            >
+              <Building2 className="h-3 w-3 mr-1" />
+              Locales Comerciales
+            </Button>
+          </div>
+
           {/* Table */}
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-white/10">
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Inquilino</th>
-                  <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Unidad</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Monto a Pagar</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Comprobante</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Estado</th>
-                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Acciones</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Nombre</th>
+                  <th className="text-left py-3 px-4 text-sm font-semibold text-white/80">Dirección</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Unidades</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Disponibles</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Alquiladas</th>
+                  <th className="text-center py-3 px-4 text-sm font-semibold text-white/80">Próximas a liberarse</th>
                 </tr>
               </thead>
               <tbody>
-                {recentPayments.length === 0 ? (
+                {filteredBuildings.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="py-12 text-center">
-                      <div className="flex flex-col items-center gap-3">
-                        <DollarSign className="h-12 w-12 text-white/20" />
-                        <p className="text-white font-medium">No hay pagos registrados</p>
-                        <p className="text-white/60 text-sm">Los pagos aparecerán aquí cuando se registren</p>
-                      </div>
+                    <td colSpan={6} className="py-8 text-center text-white/60">
+                      No hay edificios registrados
                     </td>
                   </tr>
                 ) : (
-                  recentPayments.map((payment: any) => (
+                  filteredBuildings.map((building) => (
                     <tr
-                      key={payment.id}
-                      className="border-b border-white/5 hover:bg-white/5 transition-colors"
+                      key={building.id}
+                      onClick={() => handleBuildingClick(building.id)}
+                      className="border-b border-white/5 hover:bg-white/5 cursor-pointer transition-colors"
                     >
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-purple-500/20">
-                            <Users className="h-4 w-4 text-purple-400" />
+                          <div className="p-2 rounded-lg bg-blue-500/20">
+                            <Building2 className="h-4 w-4 text-blue-400" />
                           </div>
-                          <div>
-                            <p className="font-medium text-white">
-                              {payment.tenant?.name || 'Sin inquilino'}
-                            </p>
-                            <p className="text-sm text-white/60">
-                              {payment.tenant?.email || '-'}
-                            </p>
-                          </div>
+                          <span className="font-medium text-white">{building.name}</span>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-blue-400" />
-                          <div>
-                            <p className="font-medium text-white">
-                              {payment.apartment?.building?.name || 'Propiedad'}
-                            </p>
-                            <p className="text-sm text-white/60">
-                              {payment.apartment?.nomenclature || '-'}
-                            </p>
-                          </div>
-                        </div>
+                      <td className="py-4 px-4 text-white/70">
+                        {building.address}, {building.city}
                       </td>
                       <td className="py-4 px-4 text-center">
-                        <div className="font-semibold text-green-400">
-                          ${payment.amount?.toLocaleString('es-AR') || 0}
-                        </div>
-                        <p className="text-xs text-white/60 mt-1">
-                          {format(new Date(payment.month), 'MMM yyyy', { locale: es })}
-                        </p>
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        {payment.receiptUrl ? (
-                          <a
-                            href={payment.receiptUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
-                          >
-                            <FileText className="h-4 w-4" />
-                            <span className="text-sm">Ver</span>
-                          </a>
-                        ) : (
-                          <span className="text-white/40 text-sm">Sin comprobante</span>
-                        )}
-                      </td>
-                      <td className="py-4 px-4 text-center">
-                        <Badge 
-                          className={`${
-                            payment.status === PaymentStatus.PAID 
-                              ? 'bg-green-500/20 text-green-300' 
-                              : payment.status === PaymentStatus.OVERDUE
-                              ? 'bg-red-500/20 text-red-300'
-                              : 'bg-yellow-500/20 text-yellow-300'
-                          }`}
-                        >
-                          {payment.status === PaymentStatus.PAID ? 'Aprobado' : 
-                           payment.status === PaymentStatus.OVERDUE ? 'Rechazado' : 'Pendiente'}
+                        <Badge variant="outline" className="bg-white/5">
+                          {building.totalUnits}
                         </Badge>
                       </td>
-                      <td className="py-4 px-4">
-                        <div className="flex items-center justify-center gap-2">
-                          {payment.status === PaymentStatus.PENDING && (
-                            <>
-                              <Button
-                                size="sm"
-                                className="bg-green-500/20 text-green-300 hover:bg-green-500/30"
-                                onClick={() => {
-                                  // TODO: Implement approve payment
-                                  console.log('Approve payment:', payment.id)
-                                }}
-                              >
-                                <CheckCircle className="h-4 w-4" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="bg-red-500/20 text-red-300 hover:bg-red-500/30"
-                                onClick={() => {
-                                  // TODO: Implement reject payment
-                                  console.log('Reject payment:', payment.id)
-                                }}
-                              >
-                                <AlertCircle className="h-4 w-4" />
-                              </Button>
-                            </>
-                          )}
-                          {payment.status !== PaymentStatus.PENDING && (
-                            <span className="text-white/40 text-sm">-</span>
-                          )}
-                        </div>
+                      <td className="py-4 px-4 text-center">
+                        <Badge className="bg-green-500/20 text-green-300">
+                          {building.available}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        <Badge className="bg-blue-500/20 text-blue-300">
+                          {building.rented}
+                        </Badge>
+                      </td>
+                      <td className="py-4 px-4 text-center">
+                        {building.expiringSoon > 0 ? (
+                          <Badge className="bg-orange-500/20 text-orange-300">
+                            {building.expiringSoon}
+                          </Badge>
+                        ) : (
+                          <span className="text-white/40">-</span>
+                        )}
                       </td>
                     </tr>
                   ))
