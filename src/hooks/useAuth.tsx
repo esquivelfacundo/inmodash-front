@@ -103,18 +103,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (response.ok) {
         // Cookies are handled automatically by the browser
+        console.log('🔥 Login response data:', data);
         setAuthState({
-          user: data.data.user,
+          user: data.user, // Backend returns data.user, not data.data.user
           isLoading: false,
           isAuthenticated: true,
           error: null,
         });
         return true;
       } else {
+        console.log('🔥 Login error response:', data);
         setAuthState(prev => ({
           ...prev,
           isLoading: false,
-          error: data.message || 'Login failed',
+          error: data.error || data.message || 'Login failed',
         }));
         return false;
       }
