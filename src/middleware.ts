@@ -103,8 +103,8 @@ export async function middleware(request: NextRequest) {
         const payload = JSON.parse(atob(authToken.split('.')[1]));
         const now = Math.floor(Date.now() / 1000);
         
-        // Check if token is not expired (with 5 minute buffer)
-        if (payload.exp && payload.exp > (now + 300)) {
+        // Check if token is not expired
+        if (payload.exp && payload.exp > now) {
           isAuthenticated = true;
           console.log('Auth check: Token valid', { path: pathname, exp: payload.exp, now });
         } else {
@@ -122,16 +122,6 @@ export async function middleware(request: NextRequest) {
 
     // Handle protected routes
     if (isProtectedRoute && !isAuthenticated) {
-      // Check if this is a fresh navigation (has referer from login)
-      const referer = request.headers.get('referer') || '';
-      const isFromLogin = referer.includes('/login');
-      
-      // If coming from login, give it a moment for cookies to settle
-      if (isFromLogin) {
-        console.log('Fresh login detected, allowing access');
-        return NextResponse.next();
-      }
-
       // Log unauthorized access attempt (simplified for edge runtime)
       console.warn('Unauthorized access attempt:', {
         path: pathname,

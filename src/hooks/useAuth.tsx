@@ -65,6 +65,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Auth check successful:', data.user?.email);
+        
+        // Check if server sent a new token (auto-renewal)
+        const newToken = response.headers.get('X-New-Token');
+        if (newToken) {
+          localStorage.setItem('auth-token', newToken);
+          console.log('🔄 Token auto-renewed and stored');
+        }
+        
         setAuthState({
           user: data.user,
           isLoading: false,
