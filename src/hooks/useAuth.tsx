@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check authentication status
   const checkAuth = useCallback(async () => {
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/me`, {
+      const response = await fetch(`https://inmodash-back-production.up.railway.app/api/auth/me`, {
         method: 'GET',
         credentials: 'include',
       });
@@ -90,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/login`, {
+      const response = await fetch(`https://inmodash-back-production.up.railway.app/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
+      await fetch(`https://inmodash-back-production.up.railway.app/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
@@ -160,8 +160,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-      console.log('API URL for registration:', apiUrl); // Debug log
+      const apiUrl = 'https://inmodash-back-production.up.railway.app';
+      console.log('API URL for registration (hardcoded):', apiUrl); // Debug log
       console.log('Full URL:', `${apiUrl}/api/auth/register`); // Full URL debug
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
