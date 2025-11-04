@@ -171,7 +171,7 @@ export async function middleware(request: NextRequest) {
       "style-src 'self' 'unsafe-inline'", // Tailwind requires unsafe-inline
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self' http://localhost:3001 http://127.0.0.1:3001 http://192.168.0.81:3001", // Allow backend API
+      "connect-src 'self' http://localhost:3001 http://127.0.0.1:3001 http://192.168.0.81:3001 https://inmodash-back-production.up.railway.app", // Allow backend API
       "frame-ancestors 'none'",
     ].join('; ');
     
