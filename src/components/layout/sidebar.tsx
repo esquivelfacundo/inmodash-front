@@ -82,7 +82,7 @@ export function Sidebar() {
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         lg:flex-shrink-0
       `}>
-        <div className="h-full flex flex-col py-8 px-6 lg:bg-transparent bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+        <div className="h-full flex flex-col py-8 px-6 lg:bg-none bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
           {/* Logo */}
           <div className="flex items-center gap-3 mb-12">
             <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm flex items-center justify-center">
