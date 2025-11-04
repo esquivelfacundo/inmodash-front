@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 import { Building2, User, FileText, CreditCard, CheckCircle2, ArrowRight, ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { RepresentativeStep } from './steps/representative-step'
@@ -73,6 +74,7 @@ const steps = [
 
 export function MultiStepRegister() {
   const router = useRouter()
+  const { register: registerUser } = useAuth()
   const [currentStep, setCurrentStep] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState<Partial<RegistrationData>>({})
@@ -101,34 +103,23 @@ export function MultiStepRegister() {
   const handleSubmit = async () => {
     setIsLoading(true)
     try {
-      // Add confirmPassword to match the password (required by validation schema)
-      const registrationData = {
-        ...formData,
-        confirmPassword: formData.password,
-      }
+      console.log('🔥 MULTI-STEP REGISTER - Using useAuth hook')
       
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(registrationData),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || error.error || 'Error al registrar')
+      if (!formData.name || !formData.email || !formData.password) {
+        throw new Error('Faltan datos requeridos')
       }
 
-      // Registro exitoso
-      const data = await response.json()
-      console.log('Registro exitoso:', data)
+      const success = await registerUser(formData.name, formData.email, formData.password)
       
-      // Redirigir al login para que inicie sesión usando window.location
-      // Esto evita problemas de webpack con router.push
-      window.location.href = '/login?registered=true'
+      if (success) {
+        console.log('🔥 Registration successful via useAuth')
+        // Redirigir al dashboard ya que el usuario está autenticado
+        window.location.href = '/dashboard'
+      } else {
+        throw new Error('Error al registrar usuario')
+      }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('🔥 Registration error:', error)
       alert(error instanceof Error ? error.message : 'Error al registrar')
     } finally {
       setIsLoading(false)
