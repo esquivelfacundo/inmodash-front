@@ -102,11 +102,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const data = await response.json();
 
       if (response.ok) {
-        // Save token to localStorage for API requests to Express backend
-        if (data.data.accessToken) {
-          localStorage.setItem('auth-token', data.data.accessToken);
-        }
-        
+        // Cookies are handled automatically by the browser
         setAuthState({
           user: data.data.user,
           isLoading: false,
@@ -137,16 +133,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthState(prev => ({ ...prev, isLoading: true }));
 
     try {
-      await fetch('/api/auth/logout', {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/logout`, {
         method: 'POST',
         credentials: 'include',
       });
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Clear token from localStorage
-      localStorage.removeItem('auth-token');
-      
+      // Cookies are cleared by the server
       setAuthState({
         user: null,
         isLoading: false,
@@ -170,6 +164,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.log('API URL:', apiUrl); // Debug log
       const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
+        credentials: 'include',
         headers: {
           'Content-Type': 'application/json',
         },
