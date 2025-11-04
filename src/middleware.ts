@@ -91,22 +91,30 @@ export async function middleware(request: NextRequest) {
   }
 
   try {
-    // Check authentication by calling backend /me endpoint
+    // Check authentication - simplified approach for mobile compatibility
     let isAuthenticated = false;
     
-    try {
-      const authResponse = await fetch('https://inmodash-back-production.up.railway.app/api/auth/me', {
-        method: 'GET',
-        headers: {
-          'Cookie': request.headers.get('cookie') || '',
-        },
-      });
-      
-      isAuthenticated = authResponse.ok;
-      console.log('Auth check:', { path: pathname, authenticated: isAuthenticated, status: authResponse.status });
-    } catch (error) {
-      console.log('Auth check failed:', error);
-      isAuthenticated = false;
+    // Get auth token from cookies first
+    const authToken = request.cookies.get('auth-token')?.value;
+    
+    if (authToken) {
+      try {
+        // Try to decode JWT to check if it's valid and not expired
+        const payload = JSON.parse(atob(authToken.split('.')[1]));
+        const now = Math.floor(Date.now() / 1000);
+        
+        // Check if token is not expired (with 5 minute buffer)
+        if (payload.exp && payload.exp > (now + 300)) {
+          isAuthenticated = true;
+          console.log('Auth check: Token valid', { path: pathname, exp: payload.exp, now });
+        } else {
+          console.log('Auth check: Token expired', { path: pathname, exp: payload.exp, now });
+        }
+      } catch (error) {
+        console.log('Auth check: Invalid token', { path: pathname, error: String(error) });
+      }
+    } else {
+      console.log('Auth check: No token found', { path: pathname });
     }
     const isProtectedRoute = matchesPath(pathname, PROTECTED_ROUTES);
     const isAuthRoute = matchesPath(pathname, AUTH_ROUTES);

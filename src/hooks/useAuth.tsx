@@ -55,6 +55,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const checkAuth = useCallback(async () => {
     try {
       console.log('🔥 Checking auth from domain:', window.location.hostname);
+      
+      // First try to get user data from backend
       const response = await fetch(`https://inmodash-back-production.up.railway.app/api/auth/me`, {
         method: 'GET',
         credentials: 'include',
@@ -62,20 +64,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       if (response.ok) {
         const data = await response.json();
+        console.log('✅ Auth check successful:', data.user?.email);
         setAuthState({
           user: data.user,
           isLoading: false,
           isAuthenticated: true,
           error: null,
         });
-      } else {
-        setAuthState({
-          user: null,
-          isLoading: false,
-          isAuthenticated: false,
-          error: null,
-        });
+        return;
       }
+      
+      console.log('❌ Backend auth failed, status:', response.status);
+      
+      // Fallback: Check if we have a valid token in localStorage (mobile compatibility)
+      const storedToken = localStorage.getItem('auth-token');
+      if (storedToken) {
+        try {
+          const payload = JSON.parse(atob(storedToken.split('.')[1]));
+          const now = Math.floor(Date.now() / 1000);
+          
+          if (payload.exp && payload.exp > now) {
+            console.log('✅ Using localStorage token as fallback');
+            setAuthState({
+              user: {
+                id: payload.userId,
+                email: payload.email,
+                name: payload.name || payload.email?.split('@')[0] || 'Usuario',
+                role: payload.role,
+                companyName: payload.companyName,
+                isEmailVerified: true // Assume verified if token is valid
+              },
+              isLoading: false,
+              isAuthenticated: true,
+              error: null,
+            });
+            return;
+          } else {
+            console.log('🕒 Stored token expired');
+            localStorage.removeItem('auth-token');
+          }
+        } catch (tokenError) {
+          console.log('❌ Invalid stored token');
+          localStorage.removeItem('auth-token');
+        }
+      }
+      
+      // No valid authentication found
+      setAuthState({
+        user: null,
+        isLoading: false,
+        isAuthenticated: false,
+        error: null,
+      });
     } catch (error) {
       setAuthState({
         user: null,
@@ -105,6 +145,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (response.ok) {
         // Cookies are handled automatically by the browser
         console.log('🔥 Login response data:', data);
+        
+        // Store token in localStorage as fallback for mobile
+        if (data.accessToken) {
+          localStorage.setItem('auth-token', data.accessToken);
+          console.log('💾 Token saved to localStorage for mobile fallback');
+        }
+        
         setAuthState({
           user: data.user, // Backend returns data.user, not data.data.user
           isLoading: false,
@@ -143,7 +190,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
-      // Cookies are cleared by the server
+      // Clear localStorage token and cookies
+      localStorage.removeItem('auth-token');
+      console.log('🗑️ Cleared localStorage token');
+      
       setAuthState({
         user: null,
         isLoading: false,
