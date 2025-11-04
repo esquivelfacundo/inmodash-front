@@ -128,7 +128,17 @@ export async function middleware(request: NextRequest) {
 
     // Handle protected routes
     if (isProtectedRoute && !isAuthenticated) {
-      // Log unauthorized access attempt (simplified for edge runtime)
+      // Check if this is a fresh navigation from login/register
+      const referer = request.headers.get('referer') || '';
+      const isFromAuth = referer.includes('/login') || referer.includes('/register');
+      
+      // If coming from auth pages, allow access (cookies may not be immediately available)
+      if (isFromAuth) {
+        console.log('Fresh auth navigation detected, allowing access');
+        return NextResponse.next();
+      }
+
+      // Log unauthorized access attempt
       console.warn('Unauthorized access attempt:', {
         path: pathname,
         authenticated: isAuthenticated,
