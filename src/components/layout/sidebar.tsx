@@ -161,7 +161,7 @@ export function Sidebar() {
                   <User className="w-5 h-5 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-medium text-sm truncate">
+                  <p className="text-white font-medium text-xs truncate">
                     {user?.companyName || 'Inmobiliaria Propy'}
                   </p>
                   <p className="text-white/70 text-xs truncate">
