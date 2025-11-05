@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Script from 'next/script'
 import { ArrowLeft, CreditCard, Lock, AlertCircle, CheckCircle2, Sparkles, ExternalLink } from 'lucide-react'
 import { RegistrationData } from '../multi-step-register'
 import { createSubscription } from '@/services/subscription.service'
@@ -88,8 +87,6 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
   }
 
   return (
-    <>
-      <Script src="https://sdk.mercadopago.com/js/v2" strategy="beforeInteractive" />
       <div className="space-y-6">
         {/* Payment Info Banner */}
         <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20 glass">
@@ -248,6 +245,5 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
         </div>
       </div>
       </div>
-    </>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import Script from 'next/script'
 import { CreditCard, Lock } from 'lucide-react'
 
 declare global {
@@ -22,6 +23,14 @@ export function CardPaymentForm({ publicKey, onTokenCreated, onError, isLoading 
   const [expirationDate, setExpirationDate] = useState('')
   const [securityCode, setSecurityCode] = useState('')
   const [docNumber, setDocNumber] = useState('')
+  const [sdkLoaded, setSdkLoaded] = useState(false)
+
+  useEffect(() => {
+    // Check if SDK is already loaded
+    if (window.MercadoPago) {
+      setSdkLoaded(true)
+    }
+  }, [])
 
   const formatCardNumber = (value: string) => {
     const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '')
@@ -53,6 +62,11 @@ export function CardPaymentForm({ publicKey, onTokenCreated, onError, isLoading 
 
     if (!cardNumber || !cardholderName || !expirationDate || !securityCode || !docNumber) {
       onError('Por favor completa todos los campos')
+      return
+    }
+
+    if (!window.MercadoPago) {
+      onError('SDK de MercadoPago no está cargado. Por favor recarga la página.')
       return
     }
 
@@ -88,13 +102,19 @@ export function CardPaymentForm({ publicKey, onTokenCreated, onError, isLoading 
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex items-center gap-2 mb-4">
-        <Lock className="h-5 w-5 text-white/70" />
-        <p className="text-sm text-white/70">
-          Pago seguro y encriptado
-        </p>
-      </div>
+    <>
+      <Script 
+        src="https://sdk.mercadopago.com/js/v2" 
+        strategy="lazyOnload"
+        onLoad={() => setSdkLoaded(true)}
+      />
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex items-center gap-2 mb-4">
+          <Lock className="h-5 w-5 text-white/70" />
+          <p className="text-sm text-white/70">
+            Pago seguro y encriptado
+          </p>
+        </div>
 
       {/* Número de tarjeta */}
       <div>
@@ -198,5 +218,6 @@ export function CardPaymentForm({ publicKey, onTokenCreated, onError, isLoading 
         )}
       </button>
     </form>
+    </>
   )
 }
