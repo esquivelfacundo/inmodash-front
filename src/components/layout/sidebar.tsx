@@ -17,7 +17,8 @@ import {
   Sparkles,
   User,
   Menu,
-  X
+  X,
+  CreditCard
 } from 'lucide-react';
 
 const navigation = [
@@ -31,6 +32,7 @@ const navigation = [
 ];
 
 const secondaryNavigation = [
+  { name: 'Mi Suscripción', href: '/subscription', icon: CreditCard },
   { name: 'Configuración', href: '/settings', icon: Settings },
 ];
 
