@@ -123,8 +123,20 @@ export function MultiStepRegister() {
 
       const data = await result.json()
       
+      console.log('🔥 Registration response:', { 
+        status: result.status, 
+        success: data.success,
+        hasAccessToken: !!data.accessToken,
+        user: data.user 
+      })
+      
       if (data.success && data.accessToken) {
         console.log('🔥 Registration successful')
+        console.log('🔥 Cookies should be set now. Checking...')
+        
+        // Verificar que las cookies se guardaron
+        console.log('🔥 Document.cookie:', document.cookie)
+        
         // Guardar el token para usarlo en el paso de pago
         setAccessToken(data.accessToken)
         // Avanzar al paso de pago
@@ -143,10 +155,15 @@ export function MultiStepRegister() {
   const handleSubmit = async () => {
     // Este método se llama después del paso de pago (o skip payment)
     try {
+      console.log('🔥 handleSubmit called - Verifying authentication')
+      console.log('🔥 Current cookies:', document.cookie)
+      
       // Verificar que el usuario esté autenticado
       const response = await fetch('https://inmodash-back-production.up.railway.app/api/auth/me', {
         credentials: 'include'
       })
+      
+      console.log('🔥 Auth check response status:', response.status)
 
       if (response.ok) {
         const data = await response.json()
