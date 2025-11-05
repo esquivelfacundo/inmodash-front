@@ -1,8 +1,9 @@
 'use client'
 
-import { useState } from 'react'
-import { ArrowLeft, CreditCard, Lock, AlertCircle, CheckCircle2, Sparkles } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { ArrowLeft, CreditCard, Lock, AlertCircle, CheckCircle2, Sparkles, ExternalLink } from 'lucide-react'
 import { RegistrationData } from '../multi-step-register'
+import { createSubscription } from '@/services/subscription.service'
 
 interface PaymentStepProps {
   data: Partial<RegistrationData>
@@ -10,14 +11,58 @@ interface PaymentStepProps {
   onSubmit: () => void
   onBack: () => void
   isLoading: boolean
+  accessToken?: string
 }
 
-export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading }: PaymentStepProps) {
-  const [skipPayment, setSkipPayment] = useState(true) // Por ahora siempre salteable
+export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, accessToken }: PaymentStepProps) {
+  const [skipPayment, setSkipPayment] = useState(true)
+  const [isCreatingSubscription, setIsCreatingSubscription] = useState(false)
+  const [subscriptionError, setSubscriptionError] = useState<string | null>(null)
+  const [mercadopagoUrl, setMercadopagoUrl] = useState<string | null>(null)
 
   const handleSkipAndRegister = () => {
     updateData({ paymentMethod: 'trial' })
     onSubmit()
+  }
+
+  const handleCreateSubscription = async () => {
+    if (!data.email || !accessToken) {
+      setSubscriptionError('Email o token de acceso no disponible')
+      return
+    }
+
+    setIsCreatingSubscription(true)
+    setSubscriptionError(null)
+
+    try {
+      const result = await createSubscription(
+        {
+          email: data.email,
+          plan: 'professional',
+          amount: 289,
+          currency: 'USD',
+        },
+        accessToken
+      )
+
+      if (result.success && result.initPoint) {
+        // Guardar URL de MercadoPago y abrir en nueva pestaña
+        setMercadopagoUrl(result.initPoint)
+        window.open(result.initPoint, '_blank')
+        
+        // Esperar un momento y completar el registro
+        setTimeout(() => {
+          onSubmit()
+        }, 2000)
+      } else {
+        setSubscriptionError(result.error || 'Error al crear la suscripción')
+      }
+    } catch (error) {
+      console.error('Error creating subscription:', error)
+      setSubscriptionError('Error inesperado al crear la suscripción')
+    } finally {
+      setIsCreatingSubscription(false)
+    }
   }
 
   const handlePaymentSubmit = (e: React.FormEvent) => {
@@ -60,6 +105,43 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading }: P
         </div>
       </div>
 
+      {/* Error de suscripción */}
+      {subscriptionError && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-medium text-red-400 mb-1">Error al crear suscripción</p>
+              <p className="text-sm text-red-300">{subscriptionError}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* URL de MercadoPago */}
+      {mercadopagoUrl && (
+        <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4">
+          <div className="flex items-start gap-3">
+            <ExternalLink className="h-5 w-5 text-blue-400 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="font-medium text-blue-400 mb-1">Ventana de pago abierta</p>
+              <p className="text-sm text-blue-300 mb-2">
+                Se ha abierto una nueva ventana con MercadoPago. Si no se abrió automáticamente, haz clic en el botón de abajo.
+              </p>
+              <a
+                href={mercadopagoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg text-sm transition-all"
+              >
+                Abrir MercadoPago
+                <ExternalLink className="h-4 w-4" />
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Opciones de Pago */}
       <div className="space-y-4">
         {/* Opción: Comenzar Trial */}
@@ -92,33 +174,63 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading }: P
           </div>
         </div>
 
-        {/* Opción: Pagar Ahora (Deshabilitada por ahora) */}
+        {/* Opción: Pagar Ahora con MercadoPago */}
         <div
-          className={`border-2 rounded-xl p-6 opacity-50 cursor-not-allowed ${
+          className={`border-2 rounded-xl p-6 cursor-pointer transition-all ${
             !skipPayment
               ? 'border-blue-500/50 bg-blue-500/10'
-              : 'border-white/10 bg-slate-800/20'
+              : 'border-white/10 hover:border-white/20 bg-slate-800/20'
           }`}
+          onClick={() => setSkipPayment(false)}
         >
           <div className="flex items-center gap-3">
             <input
               type="radio"
               checked={!skipPayment}
-              disabled
+              onChange={() => setSkipPayment(false)}
               className="h-5 w-5 text-cyan-400"
             />
             <div className="flex-1">
               <p className="font-semibold text-white">
-                Pagar ahora con tarjeta de crédito
+                Configurar suscripción con MercadoPago
               </p>
               <p className="text-sm text-white/70">
-                $289 USD/mes - Disponible próximamente
+                $289 USD/mes - Pago recurrente cada 30 días
               </p>
             </div>
-            <div className="px-3 py-1 bg-slate-700/50 text-white/60 rounded-full text-sm font-medium">
-              Próximamente
+            <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-medium">
+              Disponible
             </div>
           </div>
+          
+          {!skipPayment && (
+            <div className="mt-4 pt-4 border-t border-white/10">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  handleCreateSubscription()
+                }}
+                disabled={isCreatingSubscription}
+                className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isCreatingSubscription ? (
+                  <>
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                    Creando suscripción...
+                  </>
+                ) : (
+                  <>
+                    <CreditCard className="h-5 w-5" />
+                    Configurar pago con MercadoPago
+                  </>
+                )}
+              </button>
+              <p className="text-xs text-white/60 text-center mt-2">
+                Serás redirigido a MercadoPago para completar el pago
+              </p>
+            </div>
+          )}
         </div>
       </div>
 

@@ -79,6 +79,7 @@ export function MultiStepRegister() {
   const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState<Partial<RegistrationData>>({})
   const [formSubmitTrigger, setFormSubmitTrigger] = useState(0)
+  const [accessToken, setAccessToken] = useState<string | null>(null)
 
   const updateFormData = (data: Partial<RegistrationData>) => {
     setFormData((prev) => ({ ...prev, ...data }))
@@ -100,7 +101,7 @@ export function MultiStepRegister() {
     setFormSubmitTrigger(prev => prev + 1)
   }
 
-  const handleSubmit = async () => {
+  const handleRegisterUser = async () => {
     setIsLoading(true)
     try {
       console.log('🔥 MULTI-STEP REGISTER - Using useAuth hook')
@@ -111,17 +112,25 @@ export function MultiStepRegister() {
       }
 
       // Enviar todos los datos del formulario
-      const success = await registerUser(formData)
+      const result = await fetch('https://inmodash-back-production.up.railway.app/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify(formData),
+      })
+
+      const data = await result.json()
       
-      if (success) {
-        console.log('🔥 Registration successful via useAuth')
-        alert('¡Registro exitoso! Bienvenido a InmoDash')
-        // Redirigir al dashboard ya que el usuario está autenticado
-        setTimeout(() => {
-          window.location.href = '/dashboard'
-        }, 1000)
+      if (data.success && data.accessToken) {
+        console.log('🔥 Registration successful')
+        // Guardar el token para usarlo en el paso de pago
+        setAccessToken(data.accessToken)
+        // Avanzar al paso de pago
+        nextStep()
       } else {
-        throw new Error('Error al registrar usuario')
+        throw new Error(data.error || 'Error al registrar usuario')
       }
     } catch (error) {
       console.error('🔥 Registration error:', error)
@@ -129,6 +138,14 @@ export function MultiStepRegister() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  const handleSubmit = async () => {
+    // Este método se llama después del paso de pago
+    alert('¡Registro exitoso! Bienvenido a InmoDash')
+    setTimeout(() => {
+      window.location.href = '/dashboard'
+    }, 1000)
   }
 
   const renderStep = () => {
@@ -156,7 +173,7 @@ export function MultiStepRegister() {
         return (
           <SummaryStep
             data={formData as RegistrationData}
-            onNext={nextStep}
+            onNext={handleRegisterUser}
             onBack={prevStep}
           />
         )
@@ -168,6 +185,7 @@ export function MultiStepRegister() {
             onSubmit={handleSubmit}
             onBack={prevStep}
             isLoading={isLoading}
+            accessToken={accessToken || undefined}
           />
         )
       default:
