@@ -70,31 +70,31 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
 
   return (
     <div className="space-y-6">
-      {/* Trial Banner */}
-      <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-green-500/20 glass">
+      {/* Payment Info Banner */}
+      <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20 glass">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-green-500/20 rounded-lg">
-            <Sparkles className="h-6 w-6 text-green-400" />
+          <div className="p-3 bg-blue-500/20 rounded-lg">
+            <CreditCard className="h-6 w-6 text-blue-400" />
           </div>
           <div className="flex-1">
             <h3 className="text-lg font-semibold text-white mb-1">
-              ¡Comienza tu prueba gratuita de 30 días!
+              Configura tu suscripción
             </h3>
             <p className="text-white/80 mb-3">
-              No se requiere tarjeta de crédito. Puedes comenzar a usar el sistema inmediatamente
-              y configurar tu método de pago más adelante.
+              Puedes comenzar sin pago y configurar tu suscripción más adelante, 
+              o configurar tu método de pago ahora con MercadoPago.
             </p>
             <ul className="space-y-2">
               <li className="flex items-center gap-2 text-sm text-white/90">
-                <CheckCircle2 className="h-4 w-4 text-green-400" />
+                <CheckCircle2 className="h-4 w-4 text-blue-400" />
                 Acceso completo a todas las funcionalidades
               </li>
               <li className="flex items-center gap-2 text-sm text-white/90">
-                <CheckCircle2 className="h-4 w-4 text-green-400" />
-                Sin compromiso ni cargos automáticos
+                <CheckCircle2 className="h-4 w-4 text-blue-400" />
+                Pago seguro con MercadoPago
               </li>
               <li className="flex items-center gap-2 text-sm text-white/90">
-                <CheckCircle2 className="h-4 w-4 text-green-400" />
+                <CheckCircle2 className="h-4 w-4 text-blue-400" />
                 Cancela en cualquier momento
               </li>
             </ul>
@@ -159,10 +159,10 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
             />
             <div className="flex-1">
               <p className="font-semibold text-white">
-                Comenzar período de prueba gratuito
+                Comenzar sin pago
               </p>
               <p className="text-sm text-white/70">
-                Configura tu método de pago más adelante
+                Configura tu suscripción más adelante desde el dashboard
               </p>
             </div>
             <div className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
@@ -192,7 +192,7 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
                 Configurar suscripción con MercadoPago
               </p>
               <p className="text-sm text-white/70">
-                $289 USD/mes - Pago recurrente cada 30 días
+                $15 ARS/mes - Pago recurrente cada 30 días (Modo prueba)
               </p>
             </div>
             <div className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-sm font-medium">
