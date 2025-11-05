@@ -5,6 +5,7 @@ export interface CreateSubscriptionParams {
   plan?: string
   amount?: number
   currency?: string
+  cardToken: string // Token de la tarjeta (obligatorio)
 }
 
 export interface SubscriptionResponse {

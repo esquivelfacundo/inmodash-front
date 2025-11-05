@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import Script from 'next/script'
 import { 
   CreditCard, 
   Calendar, 
@@ -14,6 +15,10 @@ import {
   Sparkles
 } from 'lucide-react'
 import { getMySubscription, createSubscription, cancelSubscription } from '@/services/subscription.service'
+import { CardPaymentForm } from '@/components/subscription/card-payment-form'
+
+// Public Key de MercadoPago (usar la de producción o test según configuración)
+const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || 'APP_USR-4ed75fa4-fb01-448b-994c-4583698e7e24'
 
 interface Subscription {
   id: number
@@ -65,20 +70,19 @@ export default function SubscriptionPage() {
     }
   }
 
-  const handleCreateSubscription = async () => {
+  const handleCardTokenCreated = async (cardToken: string) => {
     setIsCreatingSubscription(true)
     setError(null)
-    setMercadopagoUrl(null)
 
     try {
       // Obtener email del usuario desde el backend usando las cookies
-      // No necesitamos pasar el token manualmente, las cookies se envían automáticamente
       const userResponse = await fetch('https://inmodash-back-production.up.railway.app/api/auth/me', {
-        credentials: 'include' // Esto envía las cookies automáticamente
+        credentials: 'include'
       })
 
       if (!userResponse.ok) {
         setError('Error de autenticación. Por favor, cierra sesión e inicia sesión nuevamente.')
+        setIsCreatingSubscription(false)
         return
       }
 
@@ -87,25 +91,24 @@ export default function SubscriptionPage() {
 
       if (!email) {
         setError('No se pudo obtener el email del usuario')
+        setIsCreatingSubscription(false)
         return
       }
 
-      // Crear suscripción (las cookies se envían automáticamente)
+      // Crear suscripción con el token de la tarjeta
       const result = await createSubscription({
         email,
         plan: 'professional',
         amount: 15,
         currency: 'ARS',
+        cardToken,
       })
 
-      if (result.success && result.initPoint) {
-        setMercadopagoUrl(result.initPoint)
-        // Abrir MercadoPago en nueva ventana
-        window.open(result.initPoint, '_blank')
-        // Recargar suscripción después de unos segundos
-        setTimeout(() => {
-          loadSubscription()
-        }, 3000)
+      if (result.success) {
+        // La suscripción se creó y autorizó exitosamente
+        setError(null)
+        // Recargar la suscripción para mostrar el estado actualizado
+        await loadSubscription()
       } else {
         setError(result.error || 'Error al crear la suscripción')
       }
@@ -180,21 +183,26 @@ export default function SubscriptionPage() {
 
   if (isLoading) {
     return (
-      <div className="p-8">
-        <div className="flex items-center justify-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <>
+        <Script src="https://sdk.mercadopago.com/js/v2" strategy="beforeInteractive" />
+        <div className="p-8">
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          </div>
         </div>
-      </div>
+      </>
     )
   }
 
   return (
-    <div className="p-8 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-white mb-2">Mi Suscripción</h1>
-        <p className="text-white/70">Gestiona tu plan y métodos de pago</p>
-      </div>
+    <>
+      <Script src="https://sdk.mercadopago.com/js/v2" strategy="beforeInteractive" />
+      <div className="p-8 space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-white mb-2">Mi Suscripción</h1>
+          <p className="text-white/70">Gestiona tu plan y métodos de pago</p>
+        </div>
 
       {/* Error Message */}
       {error && (
@@ -232,36 +240,31 @@ export default function SubscriptionPage() {
       {/* No Subscription */}
       {!subscription && !isLoading && (
         <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl p-8 backdrop-blur-sm">
-          <div className="text-center max-w-2xl mx-auto">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500/20 rounded-full mb-4">
-              <Sparkles className="h-8 w-8 text-blue-400" />
+          <div className="max-w-2xl mx-auto">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500/20 rounded-full mb-4">
+                <Sparkles className="h-8 w-8 text-blue-400" />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-2">
+                Configura tu Suscripción
+              </h2>
+              <p className="text-white/70 mb-2">
+                Completa los datos de tu tarjeta para activar tu suscripción
+              </p>
+              <p className="text-sm text-white/60">
+                $15 ARS/mes - Pago recurrente cada 30 días
+              </p>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">
-              No tienes una suscripción activa
-            </h2>
-            <p className="text-white/70 mb-6">
-              Actualmente estás en período de prueba. Configura tu suscripción para continuar usando InmoDash después del trial.
-            </p>
-            <button
-              onClick={handleCreateSubscription}
-              disabled={isCreatingSubscription}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isCreatingSubscription ? (
-                <>
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                  Creando suscripción...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="h-5 w-5" />
-                  Configurar Suscripción con MercadoPago
-                </>
-              )}
-            </button>
-            <p className="text-sm text-white/60 mt-4">
-              $15 ARS/mes - Pago recurrente cada 30 días (Modo prueba)
-            </p>
+
+            {/* Formulario de tarjeta */}
+            <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+              <CardPaymentForm
+                publicKey={MP_PUBLIC_KEY}
+                onTokenCreated={handleCardTokenCreated}
+                onError={setError}
+                isLoading={isCreatingSubscription}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -405,6 +408,7 @@ export default function SubscriptionPage() {
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </>
   )
 }
