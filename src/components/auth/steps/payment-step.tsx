@@ -26,8 +26,8 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
   }
 
   const handleCreateSubscription = async () => {
-    if (!data.email || !accessToken) {
-      setSubscriptionError('Email o token de acceso no disponible')
+    if (!data.email) {
+      setSubscriptionError('Email no disponible')
       return
     }
 
@@ -35,15 +35,12 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
     setSubscriptionError(null)
 
     try {
-      const result = await createSubscription(
-        {
-          email: data.email,
-          plan: 'professional',
-          amount: 289,
-          currency: 'USD',
-        },
-        accessToken
-      )
+      const result = await createSubscription({
+        email: data.email,
+        plan: 'professional',
+        amount: 289,
+        currency: 'USD',
+      })
 
       if (result.success && result.initPoint) {
         // Guardar URL de MercadoPago y abrir en nueva pestaña
