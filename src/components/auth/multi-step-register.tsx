@@ -141,11 +141,34 @@ export function MultiStepRegister() {
   }
 
   const handleSubmit = async () => {
-    // Este método se llama después del paso de pago
-    alert('¡Registro exitoso! Bienvenido a InmoDash')
-    setTimeout(() => {
-      window.location.href = '/dashboard'
-    }, 1000)
+    // Este método se llama después del paso de pago (o skip payment)
+    try {
+      // Verificar que el usuario esté autenticado
+      const response = await fetch('https://inmodash-back-production.up.railway.app/api/auth/me', {
+        credentials: 'include'
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('✅ User authenticated:', data.user)
+        alert('¡Registro exitoso! Bienvenido a InmoDash')
+        setTimeout(() => {
+          window.location.href = '/dashboard'
+        }, 1000)
+      } else {
+        console.error('❌ User not authenticated after registration')
+        alert('Error: No se pudo completar el registro. Por favor, intenta iniciar sesión.')
+        setTimeout(() => {
+          window.location.href = '/login'
+        }, 1000)
+      }
+    } catch (error) {
+      console.error('Error verifying authentication:', error)
+      alert('Error al verificar la autenticación. Por favor, intenta iniciar sesión.')
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 1000)
+    }
   }
 
   const renderStep = () => {
