@@ -94,8 +94,8 @@ export default function SubscriptionPage() {
       const result = await createSubscription({
         email,
         plan: 'professional',
-        amount: 289,
-        currency: 'USD',
+        amount: 50000,
+        currency: 'ARS',
       })
 
       if (result.success && result.initPoint) {
@@ -260,7 +260,7 @@ export default function SubscriptionPage() {
               )}
             </button>
             <p className="text-sm text-white/60 mt-4">
-              $289 USD/mes - Pago recurrente cada 30 días
+              $50.000 ARS/mes - Pago recurrente cada 30 días
             </p>
           </div>
         </div>
