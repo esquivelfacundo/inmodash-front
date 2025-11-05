@@ -82,27 +82,14 @@ export default function SubscriptionPage() {
     setMercadopagoUrl(null)
 
     try {
-      // Obtener token de las cookies
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth-token='))
-        ?.split('=')[1]
-
-      if (!token) {
-        setError('No se encontró token de autenticación. Por favor, inicia sesión nuevamente.')
-        return
-      }
-
-      // Obtener email del usuario desde el backend usando el token
+      // Obtener email del usuario desde el backend usando las cookies
+      // No necesitamos pasar el token manualmente, las cookies se envían automáticamente
       const userResponse = await fetch('https://inmodash-back-production.up.railway.app/api/auth/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
-        credentials: 'include'
+        credentials: 'include' // Esto envía las cookies automáticamente
       })
 
       if (!userResponse.ok) {
-        setError('Error al obtener datos del usuario')
+        setError('Error de autenticación. Por favor, cierra sesión e inicia sesión nuevamente.')
         return
       }
 
@@ -111,6 +98,17 @@ export default function SubscriptionPage() {
 
       if (!email) {
         setError('No se pudo obtener el email del usuario')
+        return
+      }
+
+      // Obtener token de las cookies para la llamada de suscripción
+      const token = document.cookie
+        .split('; ')
+        .find(row => row.startsWith('auth-token='))
+        ?.split('=')[1]
+
+      if (!token) {
+        setError('No se encontró token de autenticación. Por favor, cierra sesión e inicia sesión nuevamente.')
         return
       }
 
