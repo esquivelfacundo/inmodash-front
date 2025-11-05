@@ -1,9 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Script from 'next/script'
 import { ArrowLeft, CreditCard, Lock, AlertCircle, CheckCircle2, Sparkles, ExternalLink } from 'lucide-react'
 import { RegistrationData } from '../multi-step-register'
 import { createSubscription } from '@/services/subscription.service'
+import { CardPaymentForm } from '@/components/subscription/card-payment-form'
+
+// Public Key de MercadoPago
+const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || 'APP_USR-4ed75fa4-fb01-448b-994c-4583698e7e24'
 
 interface PaymentStepProps {
   data: Partial<RegistrationData>
@@ -25,9 +30,10 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
     onSubmit()
   }
 
-  const handleCreateSubscription = async () => {
+  const handleCardTokenCreated = async (cardToken: string) => {
     if (!data.email) {
       setSubscriptionError('Email no disponible')
+      setIsCreatingSubscription(false)
       return
     }
 
@@ -40,17 +46,15 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
         plan: 'professional',
         amount: 15,
         currency: 'ARS',
+        cardToken,
       })
 
-      if (result.success && result.initPoint) {
-        // Guardar URL de MercadoPago y abrir en nueva pestaña
-        setMercadopagoUrl(result.initPoint)
-        window.open(result.initPoint, '_blank')
-        
-        // Esperar un momento y completar el registro
+      if (result.success) {
+        // Suscripción creada exitosamente, completar el registro
+        updateData({ paymentMethod: 'mercadopago' })
         setTimeout(() => {
           onSubmit()
-        }, 2000)
+        }, 1000)
       } else {
         setSubscriptionError(result.error || 'Error al crear la suscripción')
       }
@@ -69,10 +73,12 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
   }
 
   return (
-    <div className="space-y-6">
-      {/* Payment Info Banner */}
-      <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20 glass">
-        <div className="flex items-start gap-4">
+    <>
+      <Script src="https://sdk.mercadopago.com/js/v2" strategy="beforeInteractive" />
+      <div className="space-y-6">
+        {/* Payment Info Banner */}
+        <div className="bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-blue-500/20 glass">
+          <div className="flex items-start gap-4">
           <div className="p-3 bg-blue-500/20 rounded-lg">
             <CreditCard className="h-6 w-6 text-blue-400" />
           </div>
@@ -202,97 +208,16 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
           
           {!skipPayment && (
             <div className="mt-4 pt-4 border-t border-white/10">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation()
-                  handleCreateSubscription()
-                }}
-                disabled={isCreatingSubscription}
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg hover:from-blue-700 hover:to-cyan-700 transition-all font-medium shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {isCreatingSubscription ? (
-                  <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                    Creando suscripción...
-                  </>
-                ) : (
-                  <>
-                    <CreditCard className="h-5 w-5" />
-                    Configurar pago con MercadoPago
-                  </>
-                )}
-              </button>
-              <p className="text-xs text-white/60 text-center mt-2">
-                Serás redirigido a MercadoPago para completar el pago
-              </p>
+              <CardPaymentForm
+                publicKey={MP_PUBLIC_KEY}
+                onTokenCreated={handleCardTokenCreated}
+                onError={setSubscriptionError}
+                isLoading={isCreatingSubscription}
+              />
             </div>
           )}
         </div>
       </div>
-
-      {/* Formulario de Tarjeta (Oculto si se salta el pago) */}
-      {!skipPayment && (
-        <form onSubmit={handlePaymentSubmit} className="space-y-4 bg-slate-800/30 backdrop-blur-sm rounded-xl p-6 border border-white/10">
-          <div className="flex items-center gap-2 mb-4">
-            <Lock className="h-5 w-5 text-white/70" />
-            <p className="text-sm text-white/70">
-              Pago seguro y encriptado
-            </p>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white/90 mb-2">
-              Número de Tarjeta
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="1234 5678 9012 3456"
-                className="w-full px-4 py-3 border border-white/20 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent pl-12"
-                maxLength={19}
-              />
-              <CreditCard className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/40" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
-                Fecha de Vencimiento
-              </label>
-              <input
-                type="text"
-                placeholder="MM/AA"
-                className="w-full px-4 py-3 border border-white/20 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                maxLength={5}
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-white/90 mb-2">
-                CVV
-              </label>
-              <input
-                type="text"
-                placeholder="123"
-                className="w-full px-4 py-3 border border-white/20 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                maxLength={4}
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-white/90 mb-2">
-              Nombre en la Tarjeta
-            </label>
-            <input
-              type="text"
-              placeholder="JUAN PEREZ"
-              className="w-full px-4 py-3 border border-white/20 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-            />
-          </div>
-        </form>
-      )}
 
       {/* Información de Seguridad */}
       <div className="bg-white/5 backdrop-blur-sm rounded-lg p-4">
@@ -307,7 +232,7 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
           </div>
         </div>
       </div>
-
-    </div>
+      </div>
+    </>
   )
 }
