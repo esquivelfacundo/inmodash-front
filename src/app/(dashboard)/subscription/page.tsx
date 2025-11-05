@@ -54,19 +54,8 @@ export default function SubscriptionPage() {
     setIsLoading(true)
     setError(null)
     try {
-      // Obtener token de las cookies
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth-token='))
-        ?.split('=')[1]
-
-      if (!token) {
-        // Si no hay token, el usuario no está autenticado
-        // No mostrar error, simplemente no cargar suscripción
-        return
-      }
-
-      const data = await getMySubscription(token)
+      // Las cookies se envían automáticamente con credentials: 'include'
+      const data = await getMySubscription()
       setSubscription(data)
     } catch (err) {
       console.error('Error loading subscription:', err)
@@ -101,26 +90,13 @@ export default function SubscriptionPage() {
         return
       }
 
-      // Obtener token de las cookies para la llamada de suscripción
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth-token='))
-        ?.split('=')[1]
-
-      if (!token) {
-        setError('No se encontró token de autenticación. Por favor, cierra sesión e inicia sesión nuevamente.')
-        return
-      }
-
-      const result = await createSubscription(
-        {
-          email,
-          plan: 'professional',
-          amount: 289,
-          currency: 'USD',
-        },
-        token
-      )
+      // Crear suscripción (las cookies se envían automáticamente)
+      const result = await createSubscription({
+        email,
+        plan: 'professional',
+        amount: 289,
+        currency: 'USD',
+      })
 
       if (result.success && result.initPoint) {
         setMercadopagoUrl(result.initPoint)
@@ -150,17 +126,8 @@ export default function SubscriptionPage() {
     setError(null)
 
     try {
-      const token = document.cookie
-        .split('; ')
-        .find(row => row.startsWith('auth-token='))
-        ?.split('=')[1]
-
-      if (!token) {
-        setError('No se encontró token de autenticación. Por favor, inicia sesión nuevamente.')
-        return
-      }
-
-      const success = await cancelSubscription(token)
+      // Las cookies se envían automáticamente
+      const success = await cancelSubscription()
       
       if (success) {
         alert('Suscripción cancelada exitosamente')

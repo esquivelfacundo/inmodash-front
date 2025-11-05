@@ -18,17 +18,15 @@ export interface SubscriptionResponse {
  * Crear una suscripción en MercadoPago
  */
 export async function createSubscription(
-  params: CreateSubscriptionParams,
-  token: string
+  params: CreateSubscriptionParams
 ): Promise<SubscriptionResponse> {
   try {
     const response = await fetch(`${API_URL}/api/subscriptions/create`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`,
       },
-      credentials: 'include',
+      credentials: 'include', // Las cookies se envían automáticamente
       body: JSON.stringify(params),
     })
 
@@ -54,14 +52,11 @@ export async function createSubscription(
 /**
  * Obtener la suscripción actual del usuario
  */
-export async function getMySubscription(token: string): Promise<any> {
+export async function getMySubscription(): Promise<any> {
   try {
     const response = await fetch(`${API_URL}/api/subscriptions/me`, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
+      credentials: 'include', // Las cookies se envían automáticamente
     })
 
     if (!response.ok) {
@@ -79,14 +74,11 @@ export async function getMySubscription(token: string): Promise<any> {
 /**
  * Cancelar la suscripción actual
  */
-export async function cancelSubscription(token: string): Promise<boolean> {
+export async function cancelSubscription(): Promise<boolean> {
   try {
     const response = await fetch(`${API_URL}/api/subscriptions/cancel`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      credentials: 'include',
+      credentials: 'include', // Las cookies se envían automáticamente
     })
 
     const data = await response.json()
