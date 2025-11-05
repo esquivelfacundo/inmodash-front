@@ -188,11 +188,11 @@ export async function middleware(request: NextRequest) {
     // Add CSP header for enhanced security
     const cspHeader = [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Next.js requires unsafe-inline/eval
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://sdk.mercadopago.com https://secure.mlstatic.com", // Next.js requires unsafe-inline/eval, MercadoPago SDK
       "style-src 'self' 'unsafe-inline'", // Tailwind requires unsafe-inline
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self' http://localhost:3001 http://127.0.0.1:3001 http://192.168.0.81:3001 https://inmodash-back-production.up.railway.app", // Allow backend API
+      "connect-src 'self' http://localhost:3001 http://127.0.0.1:3001 http://192.168.0.81:3001 https://inmodash-back-production.up.railway.app https://api.mercadopago.com", // Allow backend API and MercadoPago API
       "frame-ancestors 'none'",
     ].join('; ');
     
