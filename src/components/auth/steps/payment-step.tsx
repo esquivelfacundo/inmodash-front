@@ -38,7 +38,7 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
       const result = await createSubscription({
         email: data.email,
         plan: 'professional',
-        amount: 1,
+        amount: 15,
         currency: 'ARS',
       })
 
