@@ -31,18 +31,33 @@ export function PaymentStep({ data, updateData, onSubmit, onBack, isLoading, acc
   }
 
   const handleCardTokenCreated = async (cardToken: string) => {
-    if (!data.email) {
-      setSubscriptionError('Email no disponible')
-      setIsCreatingSubscription(false)
-      return
-    }
-
     setIsCreatingSubscription(true)
     setSubscriptionError(null)
 
     try {
+      // Obtener email del usuario desde el backend usando las cookies
+      const userResponse = await fetch('https://inmodash-back-production.up.railway.app/api/auth/me', {
+        credentials: 'include'
+      })
+
+      if (!userResponse.ok) {
+        setSubscriptionError('Error de autenticación. Por favor, intenta nuevamente.')
+        setIsCreatingSubscription(false)
+        return
+      }
+
+      const userData = await userResponse.json()
+      const email = userData.user?.email
+
+      if (!email) {
+        setSubscriptionError('No se pudo obtener el email del usuario')
+        setIsCreatingSubscription(false)
+        return
+      }
+
+      // Crear suscripción con el token de la tarjeta
       const result = await createSubscription({
-        email: data.email,
+        email,
         plan: 'professional',
         amount: 15,
         currency: 'ARS',
