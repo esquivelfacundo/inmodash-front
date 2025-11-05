@@ -17,8 +17,8 @@ import {
 import { getMySubscription, createSubscription, cancelSubscription } from '@/services/subscription.service'
 import { CardPaymentForm } from '@/components/subscription/card-payment-form'
 
-// Public Key de MercadoPago (usar la de producción o test según configuración)
-const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || 'APP_USR-4ed75fa4-fb01-448b-994c-4583698e7e24'
+// Public Key de MercadoPago (nueva app - usar la de producción o test según configuración)
+const MP_PUBLIC_KEY = process.env.NEXT_PUBLIC_MP_PUBLIC_KEY || 'APP_USR-28f83d59-0a3e-4a10-98ad-3c69a48ab570'
 
 interface Subscription {
   id: number
