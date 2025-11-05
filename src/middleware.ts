@@ -192,7 +192,8 @@ export async function middleware(request: NextRequest) {
       "style-src 'self' 'unsafe-inline'", // Tailwind requires unsafe-inline
       "img-src 'self' data: https:",
       "font-src 'self' data:",
-      "connect-src 'self' http://localhost:3001 http://127.0.0.1:3001 http://192.168.0.81:3001 https://inmodash-back-production.up.railway.app https://api.mercadopago.com", // Allow backend API and MercadoPago API
+      "connect-src 'self' http://localhost:3001 http://127.0.0.1:3001 http://192.168.0.81:3001 https://inmodash-back-production.up.railway.app https://api.mercadopago.com https://api.mercadolibre.com https://www.mercadolibre.com", // Allow backend API, MercadoPago and MercadoLibre APIs
+      "frame-src https://www.mercadolibre.com", // Allow MercadoLibre iframes for 3D Secure
       "frame-ancestors 'none'",
     ].join('; ');
     
