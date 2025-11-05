@@ -54,14 +54,15 @@ export default function SubscriptionPage() {
     setIsLoading(true)
     setError(null)
     try {
-      // Obtener token del localStorage o cookies
-      const token = localStorage.getItem('accessToken') || document.cookie
+      // Obtener token de las cookies
+      const token = document.cookie
         .split('; ')
         .find(row => row.startsWith('auth-token='))
         ?.split('=')[1]
 
       if (!token) {
-        setError('No se encontró token de autenticación')
+        // Si no hay token, el usuario no está autenticado
+        // No mostrar error, simplemente no cargar suscripción
         return
       }
 
@@ -81,23 +82,35 @@ export default function SubscriptionPage() {
     setMercadopagoUrl(null)
 
     try {
-      // Obtener email del usuario (puedes obtenerlo del contexto o localStorage)
-      const userStr = localStorage.getItem('user')
-      const user = userStr ? JSON.parse(userStr) : null
-      const email = user?.email
-
-      if (!email) {
-        setError('No se encontró el email del usuario')
-        return
-      }
-
-      const token = localStorage.getItem('accessToken') || document.cookie
+      // Obtener token de las cookies
+      const token = document.cookie
         .split('; ')
         .find(row => row.startsWith('auth-token='))
         ?.split('=')[1]
 
       if (!token) {
-        setError('No se encontró token de autenticación')
+        setError('No se encontró token de autenticación. Por favor, inicia sesión nuevamente.')
+        return
+      }
+
+      // Obtener email del usuario desde el backend usando el token
+      const userResponse = await fetch('https://inmodash-back-production.up.railway.app/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        credentials: 'include'
+      })
+
+      if (!userResponse.ok) {
+        setError('Error al obtener datos del usuario')
+        return
+      }
+
+      const userData = await userResponse.json()
+      const email = userData.user?.email
+
+      if (!email) {
+        setError('No se pudo obtener el email del usuario')
         return
       }
 
@@ -139,13 +152,13 @@ export default function SubscriptionPage() {
     setError(null)
 
     try {
-      const token = localStorage.getItem('accessToken') || document.cookie
+      const token = document.cookie
         .split('; ')
         .find(row => row.startsWith('auth-token='))
         ?.split('=')[1]
 
       if (!token) {
-        setError('No se encontró token de autenticación')
+        setError('No se encontró token de autenticación. Por favor, inicia sesión nuevamente.')
         return
       }
 
@@ -214,8 +227,8 @@ export default function SubscriptionPage() {
     <div className="p-8 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Mi Suscripción</h1>
-        <p className="text-gray-600">Gestiona tu plan y métodos de pago</p>
+        <h1 className="text-3xl font-bold text-white mb-2">Mi Suscripción</h1>
+        <p className="text-white/70">Gestiona tu plan y métodos de pago</p>
       </div>
 
       {/* Error Message */}
@@ -253,15 +266,15 @@ export default function SubscriptionPage() {
 
       {/* No Subscription */}
       {!subscription && !isLoading && (
-        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-8">
+        <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border border-blue-500/20 rounded-xl p-8 backdrop-blur-sm">
           <div className="text-center max-w-2xl mx-auto">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-100 rounded-full mb-4">
-              <Sparkles className="h-8 w-8 text-blue-600" />
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-500/20 rounded-full mb-4">
+              <Sparkles className="h-8 w-8 text-blue-400" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            <h2 className="text-2xl font-bold text-white mb-2">
               No tienes una suscripción activa
             </h2>
-            <p className="text-gray-600 mb-6">
+            <p className="text-white/70 mb-6">
               Actualmente estás en período de prueba. Configura tu suscripción para continuar usando InmoDash después del trial.
             </p>
             <button
@@ -281,7 +294,7 @@ export default function SubscriptionPage() {
                 </>
               )}
             </button>
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="text-sm text-white/60 mt-4">
               $289 USD/mes - Pago recurrente cada 30 días
             </p>
           </div>
@@ -294,35 +307,35 @@ export default function SubscriptionPage() {
           {/* Subscription Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Main Card */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-sm backdrop-blur-sm">
               <div className="flex items-start justify-between mb-6">
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-1">
+                  <h2 className="text-xl font-bold text-white mb-1">
                     Plan {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
                   </h2>
-                  <p className="text-gray-600">ID: #{subscription.id}</p>
+                  <p className="text-white/60">ID: #{subscription.id}</p>
                 </div>
                 {getStatusBadge(subscription.status)}
               </div>
 
               <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
+                  <div className="flex items-center gap-2 text-white/70 mb-1">
                     <DollarSign className="h-4 w-4" />
                     <span className="text-sm font-medium">Monto</span>
                   </div>
-                  <p className="text-2xl font-bold text-gray-900">
+                  <p className="text-2xl font-bold text-white">
                     {formatCurrency(subscription.amount, subscription.currency)}
                   </p>
-                  <p className="text-sm text-gray-500">por mes</p>
+                  <p className="text-sm text-white/60">por mes</p>
                 </div>
 
                 <div>
-                  <div className="flex items-center gap-2 text-gray-600 mb-1">
+                  <div className="flex items-center gap-2 text-white/70 mb-1">
                     <Calendar className="h-4 w-4" />
                     <span className="text-sm font-medium">Próximo pago</span>
                   </div>
-                  <p className="text-lg font-semibold text-gray-900">
+                  <p className="text-lg font-semibold text-white">
                     {formatDate(subscription.nextBillingDate)}
                   </p>
                 </div>
@@ -340,23 +353,23 @@ export default function SubscriptionPage() {
                 </div>
               )}
 
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <p className="text-sm text-gray-600 mb-2">Fecha de inicio</p>
-                <p className="text-gray-900 font-medium">{formatDate(subscription.startDate)}</p>
+              <div className="mt-6 pt-6 border-t border-white/10">
+                <p className="text-sm text-white/60 mb-2">Fecha de inicio</p>
+                <p className="text-white font-medium">{formatDate(subscription.startDate)}</p>
               </div>
             </div>
 
             {/* Payment History */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Historial de Pagos</h3>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-sm backdrop-blur-sm">
+              <h3 className="text-lg font-bold text-white mb-4">Historial de Pagos</h3>
               
               {subscription.payments && subscription.payments.length > 0 ? (
                 <div className="space-y-3">
                   {subscription.payments.map((payment) => (
-                    <div key={payment.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div key={payment.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
                       <div className="flex items-center gap-4">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          payment.status === 'approved' ? 'bg-green-100' : 'bg-gray-100'
+                          payment.status === 'approved' ? 'bg-green-500/20' : 'bg-white/10'
                         }`}>
                           {payment.status === 'approved' ? (
                             <CheckCircle2 className="h-5 w-5 text-green-600" />
@@ -365,10 +378,10 @@ export default function SubscriptionPage() {
                           )}
                         </div>
                         <div>
-                          <p className="font-medium text-gray-900">
+                          <p className="font-medium text-white">
                             {formatCurrency(payment.amount, payment.currency)}
                           </p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-white/60">
                             {formatDate(payment.paidAt || payment.createdAt)}
                           </p>
                         </div>
@@ -384,7 +397,7 @@ export default function SubscriptionPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-gray-500 text-center py-8">
+                <p className="text-white/60 text-center py-8">
                   No hay pagos registrados aún
                 </p>
               )}
@@ -394,8 +407,8 @@ export default function SubscriptionPage() {
           {/* Actions Sidebar */}
           <div className="space-y-6">
             {/* Actions Card */}
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Acciones</h3>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-sm backdrop-blur-sm">
+              <h3 className="text-lg font-bold text-white mb-4">Acciones</h3>
               
               <div className="space-y-3">
                 <button
@@ -418,9 +431,9 @@ export default function SubscriptionPage() {
             </div>
 
             {/* Info Card */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <h4 className="font-semibold text-blue-900 mb-2">Información</h4>
-              <p className="text-sm text-blue-700">
+            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 backdrop-blur-sm">
+              <h4 className="font-semibold text-blue-400 mb-2">Información</h4>
+              <p className="text-sm text-blue-300">
                 Tu suscripción se renueva automáticamente cada mes. Puedes cancelarla en cualquier momento.
               </p>
             </div>
