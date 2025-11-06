@@ -148,17 +148,17 @@ export default function SubscriptionPage() {
 
   const getStatusBadge = (status: string) => {
     const statusConfig: Record<string, { color: string; icon: any; text: string }> = {
-      pending: { color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', icon: Clock, text: 'Pendiente' },
-      authorized: { color: 'bg-green-500/10 text-green-400 border-green-500/20', icon: CheckCircle2, text: 'Activa' },
-      paused: { color: 'bg-gray-500/10 text-gray-400 border-gray-500/20', icon: Clock, text: 'Pausada' },
-      cancelled: { color: 'bg-red-500/10 text-red-400 border-red-500/20', icon: XCircle, text: 'Cancelada' },
+      pending: { color: 'bg-yellow-500/20 text-yellow-300 backdrop-blur-sm shadow-lg', icon: Clock, text: 'Pendiente' },
+      authorized: { color: 'bg-green-500/20 text-green-300 backdrop-blur-sm shadow-lg', icon: CheckCircle2, text: 'Activa' },
+      paused: { color: 'bg-gray-500/20 text-gray-300 backdrop-blur-sm shadow-lg', icon: Clock, text: 'Pausada' },
+      cancelled: { color: 'bg-red-500/20 text-red-300 backdrop-blur-sm shadow-lg', icon: XCircle, text: 'Cancelada' },
     }
 
     const config = statusConfig[status] || statusConfig.pending
     const Icon = config.icon
 
     return (
-      <span className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-sm font-medium border ${config.color}`}>
+      <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${config.color}`}>
         <Icon className="h-4 w-4" />
         {config.text}
       </span>
@@ -412,7 +412,7 @@ export default function SubscriptionPage() {
                 <div className="space-y-3">
                   <button
                     onClick={loadSubscription}
-                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl transition-all font-medium shadow-lg shadow-blue-500/20"
+                    className="w-full px-4 py-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white rounded-xl transition-all font-medium shadow-lg"
                   >
                     Actualizar Estado
                   </button>
@@ -421,7 +421,7 @@ export default function SubscriptionPage() {
                     <button
                       onClick={handleCancelSubscription}
                       disabled={isCancelling}
-                      className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all font-medium shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 bg-red-500/20 hover:bg-red-500/30 backdrop-blur-sm text-red-300 rounded-xl transition-all font-medium shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isCancelling ? 'Cancelando...' : 'Cancelar Suscripción'}
                     </button>
