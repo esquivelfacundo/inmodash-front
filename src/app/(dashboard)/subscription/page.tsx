@@ -271,139 +271,179 @@ export default function SubscriptionPage() {
 
       {/* Active Subscription */}
       {subscription && (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Subscription Details */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Main Card */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-sm backdrop-blur-sm">
-              <div className="flex items-start justify-between mb-6">
-                <div>
-                  <h2 className="text-xl font-bold text-white mb-1">
-                    Plan {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
-                  </h2>
-                  <p className="text-white/60">ID: #{subscription.id}</p>
-                </div>
-                {getStatusBadge(subscription.status)}
-              </div>
-
-              <div className="grid grid-cols-2 gap-6">
-                <div>
-                  <div className="flex items-center gap-2 text-white/70 mb-1">
-                    <DollarSign className="h-4 w-4" />
-                    <span className="text-sm font-medium">Monto</span>
+        <div className="space-y-6">
+          {/* Main Subscription Card - Full Width */}
+          <div className="bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/10">
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                    <Sparkles className="h-6 w-6 text-white" />
                   </div>
-                  <p className="text-2xl font-bold text-white">
-                    {formatCurrency(subscription.amount, subscription.currency)}
-                  </p>
-                  <p className="text-sm text-white/60">por mes</p>
-                </div>
-
-                <div>
-                  <div className="flex items-center gap-2 text-white/70 mb-1">
-                    <Calendar className="h-4 w-4" />
-                    <span className="text-sm font-medium">Próximo pago</span>
+                  <div>
+                    <h2 className="text-2xl font-bold text-white">
+                      Plan {subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
+                    </h2>
+                    <p className="text-white/50 text-sm">ID: #{subscription.id}</p>
                   </div>
-                  <p className="text-lg font-semibold text-white">
-                    {formatDate(subscription.nextBillingDate)}
-                  </p>
                 </div>
               </div>
-
-              {subscription.isTrialActive && subscription.trialEndDate && (
-                <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2 text-green-800 mb-1">
-                    <Sparkles className="h-5 w-5" />
-                    <span className="font-medium">Período de prueba activo</span>
-                  </div>
-                  <p className="text-sm text-green-700">
-                    Tu trial termina el {formatDate(subscription.trialEndDate)}
-                  </p>
-                </div>
-              )}
-
-              <div className="mt-6 pt-6 border-t border-white/10">
-                <p className="text-sm text-white/60 mb-2">Fecha de inicio</p>
-                <p className="text-white font-medium">{formatDate(subscription.startDate)}</p>
-              </div>
+              {getStatusBadge(subscription.status)}
             </div>
 
-            {/* Payment History */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-sm backdrop-blur-sm">
-              <h3 className="text-lg font-bold text-white mb-4">Historial de Pagos</h3>
-              
-              {subscription.payments && subscription.payments.length > 0 ? (
-                <div className="space-y-3">
-                  {subscription.payments.map((payment) => (
-                    <div key={payment.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                      <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                          payment.status === 'approved' ? 'bg-green-500/20' : 'bg-white/10'
-                        }`}>
-                          {payment.status === 'approved' ? (
-                            <CheckCircle2 className="h-5 w-5 text-green-600" />
-                          ) : (
-                            <Clock className="h-5 w-5 text-gray-600" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="font-medium text-white">
-                            {formatCurrency(payment.amount, payment.currency)}
-                          </p>
-                          <p className="text-sm text-white/60">
-                            {formatDate(payment.paidAt || payment.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                      <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                        payment.status === 'approved' 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {payment.status === 'approved' ? 'Aprobado' : payment.status}
-                      </span>
-                    </div>
-                  ))}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Monto */}
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <div className="flex items-center gap-2 text-white/60 mb-3">
+                  <DollarSign className="h-5 w-5" />
+                  <span className="text-sm font-medium">Monto Mensual</span>
                 </div>
-              ) : (
-                <p className="text-white/60 text-center py-8">
-                  No hay pagos registrados aún
+                <p className="text-3xl font-bold text-white mb-1">
+                  {formatCurrency(subscription.amount, subscription.currency)}
                 </p>
-              )}
+                <p className="text-sm text-white/50">Renovación automática</p>
+              </div>
+
+              {/* Próximo Pago */}
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <div className="flex items-center gap-2 text-white/60 mb-3">
+                  <Calendar className="h-5 w-5" />
+                  <span className="text-sm font-medium">Próximo Pago</span>
+                </div>
+                <p className="text-xl font-semibold text-white mb-1">
+                  {formatDate(subscription.nextBillingDate)}
+                </p>
+                <p className="text-sm text-white/50">Fecha estimada</p>
+              </div>
+
+              {/* Fecha de Inicio */}
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+                <div className="flex items-center gap-2 text-white/60 mb-3">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <span className="text-sm font-medium">Suscrito Desde</span>
+                </div>
+                <p className="text-xl font-semibold text-white mb-1">
+                  {formatDate(subscription.startDate)}
+                </p>
+                <p className="text-sm text-white/50">Fecha de activación</p>
+              </div>
             </div>
+
+            {subscription.isTrialActive && subscription.trialEndDate && (
+              <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl border border-green-500/30">
+                <div className="flex items-center gap-2 text-green-300 mb-1">
+                  <Sparkles className="h-5 w-5" />
+                  <span className="font-medium">Período de prueba activo</span>
+                </div>
+                <p className="text-sm text-green-200/80">
+                  Tu trial termina el {formatDate(subscription.trialEndDate)}
+                </p>
+              </div>
+            )}
           </div>
 
-          {/* Actions Sidebar */}
-          <div className="space-y-6">
-            {/* Actions Card */}
-            <div className="bg-white/5 border border-white/10 rounded-xl p-6 shadow-sm backdrop-blur-sm">
-              <h3 className="text-lg font-bold text-white mb-4">Acciones</h3>
-              
-              <div className="space-y-3">
-                <button
-                  onClick={loadSubscription}
-                  className="w-full px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-all font-medium"
-                >
-                  Actualizar Estado
-                </button>
-
-                {subscription.status === 'authorized' && (
-                  <button
-                    onClick={handleCancelSubscription}
-                    disabled={isCancelling}
-                    className="w-full px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isCancelling ? 'Cancelando...' : 'Cancelar Suscripción'}
-                  </button>
+          {/* Grid Layout for History and Actions */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Payment History - Takes 2 columns */}
+            <div className="lg:col-span-2">
+              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/10">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-xl font-bold text-white">Historial de Pagos</h3>
+                  <span className="text-sm text-white/50">
+                    {subscription.payments?.length || 0} {subscription.payments?.length === 1 ? 'pago' : 'pagos'}
+                  </span>
+                </div>
+                
+                {subscription.payments && subscription.payments.length > 0 ? (
+                  <div className="space-y-3">
+                    {subscription.payments.map((payment) => (
+                      <div 
+                        key={payment.id} 
+                        className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-200 border border-white/5"
+                      >
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+                            payment.status === 'approved' 
+                              ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30' 
+                              : 'bg-white/10 border border-white/20'
+                          }`}>
+                            {payment.status === 'approved' ? (
+                              <CheckCircle2 className="h-6 w-6 text-green-400" />
+                            ) : (
+                              <Clock className="h-6 w-6 text-white/60" />
+                            )}
+                          </div>
+                          <div>
+                            <p className="font-semibold text-white text-lg">
+                              {formatCurrency(payment.amount, payment.currency)}
+                            </p>
+                            <p className="text-sm text-white/50">
+                              {formatDate(payment.paidAt || payment.createdAt)}
+                            </p>
+                          </div>
+                        </div>
+                        <span className={`px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm ${
+                          payment.status === 'approved' 
+                            ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
+                            : 'bg-white/10 text-white/70 border border-white/20'
+                        }`}>
+                          {payment.status === 'approved' ? 'Aprobado' : payment.status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-4">
+                      <CreditCard className="h-8 w-8 text-white/30" />
+                    </div>
+                    <p className="text-white/60 font-medium mb-1">No hay pagos registrados</p>
+                    <p className="text-white/40 text-sm">Los pagos aparecerán aquí una vez procesados</p>
+                  </div>
                 )}
               </div>
             </div>
 
-            {/* Info Card */}
-            <div className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-6 backdrop-blur-sm">
-              <h4 className="font-semibold text-blue-400 mb-2">Información</h4>
-              <p className="text-sm text-blue-300">
-                Tu suscripción se renueva automáticamente cada mes. Puedes cancelarla en cualquier momento.
-              </p>
+            {/* Actions Sidebar - Takes 1 column */}
+            <div className="space-y-6">
+              {/* Actions Card */}
+              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/10">
+                <h3 className="text-lg font-bold text-white mb-4">Acciones</h3>
+                
+                <div className="space-y-3">
+                  <button
+                    onClick={loadSubscription}
+                    className="w-full px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white rounded-xl transition-all font-medium shadow-lg shadow-blue-500/20"
+                  >
+                    Actualizar Estado
+                  </button>
+
+                  {subscription.status === 'authorized' && (
+                    <button
+                      onClick={handleCancelSubscription}
+                      disabled={isCancelling}
+                      className="w-full px-4 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-xl transition-all font-medium shadow-lg shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isCancelling ? 'Cancelando...' : 'Cancelar Suscripción'}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Info Card */}
+              <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl rounded-2xl p-6 border border-blue-500/20 shadow-xl">
+                <div className="flex items-start gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
+                    <AlertCircle className="h-5 w-5 text-blue-400" />
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-blue-300 mb-2">Información</h4>
+                    <p className="text-sm text-blue-200/80 leading-relaxed">
+                      Tu suscripción se renueva automáticamente cada mes. Puedes cancelarla en cualquier momento sin cargos adicionales.
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
