@@ -273,7 +273,7 @@ export default function SubscriptionPage() {
       {subscription && (
         <div className="space-y-6">
           {/* Main Subscription Card - Full Width */}
-          <div className="bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl border border-white/10">
+          <div className="bg-gradient-to-br from-blue-500/10 via-purple-500/5 to-pink-500/10 backdrop-blur-xl rounded-2xl p-8 shadow-2xl">
             <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6 mb-8">
               <div className="flex-1">
                 <div className="flex items-center gap-3 mb-2">
@@ -293,7 +293,7 @@ export default function SubscriptionPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Monto */}
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 text-white/60 mb-3">
                   <DollarSign className="h-5 w-5" />
                   <span className="text-sm font-medium">Monto Mensual</span>
@@ -305,7 +305,7 @@ export default function SubscriptionPage() {
               </div>
 
               {/* Próximo Pago */}
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 text-white/60 mb-3">
                   <Calendar className="h-5 w-5" />
                   <span className="text-sm font-medium">Próximo Pago</span>
@@ -317,7 +317,7 @@ export default function SubscriptionPage() {
               </div>
 
               {/* Fecha de Inicio */}
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 border border-white/10">
+              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-6 shadow-lg">
                 <div className="flex items-center gap-2 text-white/60 mb-3">
                   <CheckCircle2 className="h-5 w-5" />
                   <span className="text-sm font-medium">Suscrito Desde</span>
@@ -330,7 +330,7 @@ export default function SubscriptionPage() {
             </div>
 
             {subscription.isTrialActive && subscription.trialEndDate && (
-              <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl border border-green-500/30">
+              <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 backdrop-blur-sm rounded-xl shadow-lg">
                 <div className="flex items-center gap-2 text-green-300 mb-1">
                   <Sparkles className="h-5 w-5" />
                   <span className="font-medium">Período de prueba activo</span>
@@ -346,7 +346,7 @@ export default function SubscriptionPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Payment History - Takes 2 columns */}
             <div className="lg:col-span-2">
-              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/10">
+              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 shadow-xl">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="text-xl font-bold text-white">Historial de Pagos</h3>
                   <span className="text-sm text-white/50">
@@ -359,13 +359,12 @@ export default function SubscriptionPage() {
                     {subscription.payments.map((payment) => (
                       <div 
                         key={payment.id} 
-                        className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-200 border border-white/5"
-                      >
+                        className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 rounded-xl transition-all duration-200 shadow-lg">
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+                          <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all shadow-lg ${
                             payment.status === 'approved' 
-                              ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30' 
-                              : 'bg-white/10 border border-white/20'
+                              ? 'bg-gradient-to-br from-green-500/20 to-emerald-500/20' 
+                              : 'bg-white/10'
                           }`}>
                             {payment.status === 'approved' ? (
                               <CheckCircle2 className="h-6 w-6 text-green-400" />
@@ -382,10 +381,10 @@ export default function SubscriptionPage() {
                             </p>
                           </div>
                         </div>
-                        <span className={`px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm ${
+                        <span className={`px-4 py-2 rounded-lg text-sm font-medium backdrop-blur-sm shadow-lg ${
                           payment.status === 'approved' 
-                            ? 'bg-green-500/20 text-green-300 border border-green-500/30' 
-                            : 'bg-white/10 text-white/70 border border-white/20'
+                            ? 'bg-green-500/20 text-green-300' 
+                            : 'bg-white/10 text-white/70'
                         }`}>
                           {payment.status === 'approved' ? 'Aprobado' : payment.status}
                         </span>
@@ -407,7 +406,7 @@ export default function SubscriptionPage() {
             {/* Actions Sidebar - Takes 1 column */}
             <div className="space-y-6">
               {/* Actions Card */}
-              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/10">
+              <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-6 shadow-xl">
                 <h3 className="text-lg font-bold text-white mb-4">Acciones</h3>
                 
                 <div className="space-y-3">
@@ -431,7 +430,7 @@ export default function SubscriptionPage() {
               </div>
 
               {/* Info Card */}
-              <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl rounded-2xl p-6 border border-blue-500/20 shadow-xl">
+              <div className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 backdrop-blur-xl rounded-2xl p-6 shadow-xl">
                 <div className="flex items-start gap-3">
                   <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0">
                     <AlertCircle className="h-5 w-5 text-blue-400" />
