@@ -2,7 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { FileText, Calendar, User, Edit, Trash2, DollarSign } from 'lucide-react'
+import Link from 'next/link'
+import { FileText, Calendar, User, Edit, Trash2, DollarSign, Plus } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -82,6 +83,12 @@ export default function ContractsPage() {
             Gestiona todos los contratos de alquiler
           </p>
         </div>
+        <Link href="/contracts/new">
+          <Button>
+            <Plus className="h-4 w-4 mr-2" />
+            Nuevo Contrato
+          </Button>
+        </Link>
       </div>
 
       {/* Stats */}
