@@ -1,24 +1,106 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Users, FileText, Calendar, TrendingUp, Mail, Phone, Edit, Trash2, ArrowRight, ChevronDown, User } from 'lucide-react'
+import { Users, FileText, Calendar, TrendingUp, Mail, Phone, Edit, Trash2, ArrowRight, ChevronDown, User, Search, Building2, Home } from 'lucide-react'
 import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card'
 import { GlassStatCard } from '@/components/ui/glass-stat-card'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loading } from '@/components/ui/loading'
+import { Input } from '@/components/ui/input'
 import { useTenants } from '@/hooks/useTenants'
+import { useContracts } from '@/hooks/useContracts'
+import { useBuildings } from '@/hooks/useBuildings'
+import { useApartments } from '@/hooks/useApartments'
 
 export default function ClientsPage() {
   const router = useRouter()
-  const { tenants, loading, deleteTenant } = useTenants()
+  const { tenants, loading: tenantsLoading, deleteTenant } = useTenants()
+  const { contracts, loading: contractsLoading } = useContracts()
+  const { buildings, loading: buildingsLoading } = useBuildings()
+  const { apartments, loading: apartmentsLoading } = useApartments()
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
   const [expandedClient, setExpandedClient] = useState<number | null>(null)
+  const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all')
+  const [buildingFilter, setBuildingFilter] = useState<number | 'all'>('all')
+
+  const loading = tenantsLoading || contractsLoading || buildingsLoading || apartmentsLoading
+
+  // Helper function to get active contract for a tenant
+  const getActiveContract = (tenantId: number) => {
+    const now = new Date()
+    return contracts.find(contract => 
+      contract.tenantId === tenantId && 
+      new Date(contract.startDate) <= now && 
+      new Date(contract.endDate) >= now
+    )
+  }
+
+  // Helper function to check if tenant is active
+  const isTenantActive = (tenantId: number) => {
+    return !!getActiveContract(tenantId)
+  }
+
+  // Helper function to get apartment info
+  const getApartmentInfo = (tenantId: number) => {
+    const activeContract = getActiveContract(tenantId)
+    if (!activeContract) return null
+    
+    const apartment = apartments.find(apt => apt.id === activeContract.apartmentId)
+    if (!apartment) return null
+
+    const building = apartment.buildingId 
+      ? buildings.find(b => b.id === apartment.buildingId)
+      : null
+
+    return {
+      apartment,
+      building,
+      buildingName: building?.name || '-',
+      unitName: apartment.nomenclature || '-'
+    }
+  }
+
+  // Enhanced tenants with contract info
+  const tenantsWithInfo = useMemo(() => {
+    return tenants.map(tenant => ({
+      ...tenant,
+      isActive: isTenantActive(tenant.id),
+      apartmentInfo: getApartmentInfo(tenant.id)
+    }))
+  }, [tenants, contracts, apartments, buildings])
+
+  // Filter tenants
+  const filteredTenants = useMemo(() => {
+    return tenantsWithInfo.filter(tenant => {
+      // Search filter
+      const matchesSearch = searchTerm === '' || 
+        tenant.nameOrBusiness.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tenant.dniOrCuit.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tenant.contactEmail.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tenant.contactPhone.toLowerCase().includes(searchTerm.toLowerCase())
+
+      // Status filter
+      const matchesStatus = statusFilter === 'all' ||
+        (statusFilter === 'active' && tenant.isActive) ||
+        (statusFilter === 'inactive' && !tenant.isActive)
+
+      // Building filter
+      const matchesBuilding = buildingFilter === 'all' ||
+        (tenant.apartmentInfo?.building?.id === buildingFilter)
+
+      return matchesSearch && matchesStatus && matchesBuilding
+    })
+  }, [tenantsWithInfo, searchTerm, statusFilter, buildingFilter])
+
+  const activeTenants = tenantsWithInfo.filter(t => t.isActive).length
+  const inactiveTenants = tenantsWithInfo.filter(t => !t.isActive).length
 
   const stats = {
     totalTenants: tenants.length,
-    activeContracts: 0,
+    activeContracts: activeTenants,
     expiringSoon: 0,
     totalGuarantors: 0,
   }
@@ -62,16 +144,16 @@ export default function ClientsPage() {
           icon={Users}
         />
         <GlassStatCard
-          title="Contratos Activos"
-          value={stats.activeContracts}
+          title="Clientes Activos"
+          value={activeTenants}
           icon={FileText}
-          iconClassName="bg-blue-500/20"
+          iconClassName="bg-green-500/20"
         />
         <GlassStatCard
-          title="Vencen Pronto"
-          value={stats.expiringSoon}
+          title="Clientes Inactivos"
+          value={inactiveTenants}
           icon={Calendar}
-          iconClassName="bg-yellow-500/20"
+          iconClassName="bg-red-500/20"
         />
         <GlassStatCard
           title="Garantes"
@@ -90,6 +172,71 @@ export default function ClientsPage() {
           </GlassCardTitle>
         </GlassCardHeader>
         <GlassCardContent>
+          {/* Search and Filters */}
+          <div className="mb-6 space-y-4">
+            {/* Search Bar */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/40" />
+              <Input
+                type="text"
+                placeholder="Buscar por nombre, DNI/CUIT, email o teléfono..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10 bg-white/5 border-white/10 text-white placeholder:text-white/40 focus:border-blue-500"
+              />
+            </div>
+
+            {/* Filters */}
+            <div className="flex flex-wrap gap-3">
+              {/* Status Filter */}
+              <div className="flex gap-2">
+                <Button
+                  variant={statusFilter === 'all' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('all')}
+                  className={statusFilter === 'all' ? 'bg-blue-600 hover:bg-blue-700' : 'bg-white/5 hover:bg-white/10'}
+                >
+                  Todos
+                </Button>
+                <Button
+                  variant={statusFilter === 'active' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('active')}
+                  className={statusFilter === 'active' ? 'bg-green-600 hover:bg-green-700' : 'bg-white/5 hover:bg-white/10'}
+                >
+                  Activos
+                </Button>
+                <Button
+                  variant={statusFilter === 'inactive' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setStatusFilter('inactive')}
+                  className={statusFilter === 'inactive' ? 'bg-red-600 hover:bg-red-700' : 'bg-white/5 hover:bg-white/10'}
+                >
+                  Inactivos
+                </Button>
+              </div>
+
+              {/* Building Filter */}
+              <select
+                value={buildingFilter}
+                onChange={(e) => setBuildingFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                className="px-3 py-2 rounded-lg bg-white/5 text-white text-sm border border-white/10 hover:bg-white/10 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="all" className="bg-slate-900">Todos los edificios</option>
+                {buildings.map((building) => (
+                  <option key={building.id} value={building.id} className="bg-slate-900">
+                    {building.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Results count */}
+            <p className="text-sm text-white/60">
+              Mostrando {filteredTenants.length} de {tenants.length} clientes
+            </p>
+          </div>
+
           {tenants.length === 0 ? (
             <div className="py-12 text-center">
               <Users className="h-12 w-12 text-white/20 mx-auto mb-3" />
@@ -98,9 +245,17 @@ export default function ClientsPage() {
                 Los clientes se crean desde los departamentos cuando asignas un inquilino.
               </p>
             </div>
+          ) : filteredTenants.length === 0 ? (
+            <div className="py-12 text-center">
+              <Search className="h-12 w-12 text-white/20 mx-auto mb-3" />
+              <p className="text-white font-medium">No se encontraron clientes</p>
+              <p className="text-white/60 text-sm mt-1">
+                Intenta ajustar los filtros de búsqueda
+              </p>
+            </div>
           ) : (
             <div className="space-y-3">
-              {tenants.map((tenant) => (
+              {filteredTenants.map((tenant) => (
                 <div
                   key={tenant.id}
                   className="group relative overflow-hidden rounded-xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-200"
@@ -127,27 +282,37 @@ export default function ClientsPage() {
 
                     {/* Contact Info */}
                     <div className="flex items-center gap-6 flex-shrink-0">
-                      {/* Phone */}
-                      <div className="text-center">
-                        <p className="text-xs text-white/60 mb-1">Teléfono</p>
+                      {/* Building */}
+                      <div className="text-center min-w-[120px]">
+                        <p className="text-xs text-white/60 mb-1">Edificio</p>
                         <div className="px-3 py-1 rounded-lg bg-white/10">
-                          <span className="text-sm font-semibold text-white">{tenant.contactPhone}</span>
+                          <span className="text-sm font-semibold text-white truncate block">
+                            {tenant.apartmentInfo?.buildingName || '-'}
+                          </span>
                         </div>
                       </div>
 
-                      {/* Email */}
-                      <div className="text-center max-w-[200px]">
-                        <p className="text-xs text-white/60 mb-1">Email</p>
+                      {/* Unit */}
+                      <div className="text-center min-w-[100px]">
+                        <p className="text-xs text-white/60 mb-1">Unidad</p>
                         <div className="px-3 py-1 rounded-lg bg-white/10">
-                          <span className="text-sm font-semibold text-white truncate block">{tenant.contactEmail}</span>
+                          <span className="text-sm font-semibold text-white">
+                            {tenant.apartmentInfo?.unitName || '-'}
+                          </span>
                         </div>
                       </div>
 
                       {/* Status Badge */}
                       <div className="text-center">
                         <p className="text-xs text-white/60 mb-1">Estado</p>
-                        <div className="px-3 py-1 rounded-lg bg-green-500/20 text-green-300">
-                          <span className="text-sm font-semibold">Activo</span>
+                        <div className={`px-3 py-1 rounded-lg ${
+                          tenant.isActive 
+                            ? 'bg-green-500/20 text-green-300' 
+                            : 'bg-red-500/20 text-red-300'
+                        }`}>
+                          <span className="text-sm font-semibold">
+                            {tenant.isActive ? 'Activo' : 'Inactivo'}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -175,8 +340,12 @@ export default function ClientsPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <div className="px-2 py-1 rounded-lg text-xs bg-green-500/20 text-green-300">
-                          Activo
+                        <div className={`px-2 py-1 rounded-lg text-xs ${
+                          tenant.isActive 
+                            ? 'bg-green-500/20 text-green-300' 
+                            : 'bg-red-500/20 text-red-300'
+                        }`}>
+                          {tenant.isActive ? 'Activo' : 'Inactivo'}
                         </div>
                         <ChevronDown 
                           className={`h-5 w-5 text-white/60 transition-transform ${
@@ -189,6 +358,24 @@ export default function ClientsPage() {
                     {/* Expanded Content */}
                     {expandedClient === tenant.id && (
                       <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
+                        {/* Rental Info */}
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="p-3 rounded-lg bg-white/5">
+                            <p className="text-xs text-white/60 mb-1">Edificio</p>
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4 text-white/60" />
+                              <p className="text-sm text-white">{tenant.apartmentInfo?.buildingName || '-'}</p>
+                            </div>
+                          </div>
+                          <div className="p-3 rounded-lg bg-white/5">
+                            <p className="text-xs text-white/60 mb-1">Unidad</p>
+                            <div className="flex items-center gap-2">
+                              <Home className="h-4 w-4 text-white/60" />
+                              <p className="text-sm text-white">{tenant.apartmentInfo?.unitName || '-'}</p>
+                            </div>
+                          </div>
+                        </div>
+
                         {/* Contact Info */}
                         <div>
                           <p className="text-xs text-white/60 mb-1">Información de Contacto</p>
