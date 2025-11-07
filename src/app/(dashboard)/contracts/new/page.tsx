@@ -14,6 +14,7 @@ import { useApartments } from '@/hooks/useApartments'
 import { useBuildings } from '@/hooks/useBuildings'
 import { useGuarantors } from '@/hooks/useGuarantors'
 import { useContracts } from '@/hooks/useContracts'
+import { ApartmentStatus } from '@/types'
 
 interface ContractCost {
   id: string
@@ -73,11 +74,11 @@ export default function NewContractPage() {
 
   // Filter available apartments
   const availableApartments = useMemo(() => {
-    return apartments.filter((apt) => apt.status === 'AVAILABLE')
+    return apartments.filter((apt) => apt.status === ApartmentStatus.AVAILABLE)
   }, [apartments])
 
   // Get building name
-  const getBuildingName = (buildingId: number | null) => {
+  const getBuildingName = (buildingId: number | null | undefined) => {
     if (!buildingId) return 'Propiedad Independiente'
     const building = buildings.find((b) => b.id === buildingId)
     return building?.name || 'Edificio desconocido'
