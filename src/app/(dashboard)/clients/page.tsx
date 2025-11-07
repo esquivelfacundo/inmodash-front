@@ -2,17 +2,19 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Users, FileText, Calendar, TrendingUp, Mail, Phone, Edit, Trash2 } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Users, FileText, Calendar, TrendingUp, Mail, Phone, Edit, Trash2, ArrowRight, ChevronDown, User } from 'lucide-react'
+import { GlassCard, GlassCardContent, GlassCardHeader, GlassCardTitle } from '@/components/ui/glass-card'
+import { GlassStatCard } from '@/components/ui/glass-stat-card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loading } from '@/components/ui/loading'
-import { Badge } from '@/components/ui/badge'
 import { useTenants } from '@/hooks/useTenants'
 
 export default function ClientsPage() {
   const router = useRouter()
   const { tenants, loading, deleteTenant } = useTenants()
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null)
+  const [expandedClient, setExpandedClient] = useState<number | null>(null)
 
   const stats = {
     totalTenants: tenants.length,
@@ -20,6 +22,7 @@ export default function ClientsPage() {
     expiringSoon: 0,
     totalGuarantors: 0,
   }
+
   const handleDelete = async () => {
     if (deleteConfirm) {
       try {
@@ -29,6 +32,10 @@ export default function ClientsPage() {
         alert('Error al eliminar el cliente. Por favor intente nuevamente.')
       }
     }
+  }
+
+  const handleClientClick = (clientId: number) => {
+    router.push(`/clients/${clientId}`)
   }
 
   if (loading) {
@@ -48,111 +55,195 @@ export default function ClientsPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Clientes</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalTenants}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Contratos Activos</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.activeContracts}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Vencen Pronto</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.expiringSoon}</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Garantes</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalGuarantors}</div>
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <GlassStatCard
+          title="Total Clientes"
+          value={stats.totalTenants}
+          icon={Users}
+        />
+        <GlassStatCard
+          title="Contratos Activos"
+          value={stats.activeContracts}
+          icon={FileText}
+          iconClassName="bg-blue-500/20"
+        />
+        <GlassStatCard
+          title="Vencen Pronto"
+          value={stats.expiringSoon}
+          icon={Calendar}
+          iconClassName="bg-yellow-500/20"
+        />
+        <GlassStatCard
+          title="Garantes"
+          value={stats.totalGuarantors}
+          icon={TrendingUp}
+          iconClassName="bg-purple-500/20"
+        />
       </div>
 
-      {/* Tenants List */}
-      {tenants.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <Users className="h-16 w-16 text-white/20 mb-4" />
-            <h3 className="text-lg font-medium text-white mb-2">
-              No hay clientes registrados
-            </h3>
-            <p className="text-white/60 text-center mb-6 max-w-md">
-              Los clientes se crean desde los departamentos cuando asignas un inquilino.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {tenants.map((tenant) => (
-            <Card key={tenant.id} className="hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>{tenant.nameOrBusiness}</span>
-                  <Badge variant="outline">Cliente</Badge>
-                </CardTitle>
-                <CardDescription>DNI/CUIT: {tenant.dniOrCuit}</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-2 text-sm">
-                  <div className="flex items-center text-white/60">
-                    <Users className="h-4 w-4 mr-2" />
-                    <span>{tenant.contactName}</span>
-                  </div>
-                  <div className="flex items-center text-white/60">
-                    <Phone className="h-4 w-4 mr-2" />
-                    <span>{tenant.contactPhone}</span>
-                  </div>
-                  <div className="flex items-center text-white/60">
-                    <Mail className="h-4 w-4 mr-2" />
-                    <span className="truncate">{tenant.contactEmail}</span>
-                  </div>
-                </div>
-                <div className="pt-3 border-t">
-                  <p className="text-sm text-white/60">Dirección:</p>
-                  <p className="text-sm font-medium">{tenant.address}</p>
-                </div>
-                <div className="flex space-x-2 pt-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="flex-1"
-                    onClick={() => router.push(`/clients/${tenant.id}/edit`)}
+      {/* Clients List */}
+      <GlassCard>
+        <GlassCardHeader>
+          <GlassCardTitle className="flex items-center gap-2 text-white">
+            <Users className="h-5 w-5" />
+            Todos los Clientes
+          </GlassCardTitle>
+        </GlassCardHeader>
+        <GlassCardContent>
+          {tenants.length === 0 ? (
+            <div className="py-12 text-center">
+              <Users className="h-12 w-12 text-white/20 mx-auto mb-3" />
+              <p className="text-white font-medium">No hay clientes registrados</p>
+              <p className="text-white/60 text-sm mt-1">
+                Los clientes se crean desde los departamentos cuando asignas un inquilino.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {tenants.map((tenant) => (
+                <div
+                  key={tenant.id}
+                  className="group relative overflow-hidden rounded-xl bg-white/5 backdrop-blur-sm hover:bg-white/10 transition-all duration-200"
+                >
+                  {/* Desktop View */}
+                  <div 
+                    className="hidden md:flex items-center gap-4 p-4 cursor-pointer"
+                    onClick={() => handleClientClick(tenant.id)}
                   >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Editar
-                  </Button>
-                  <Button 
-                    variant="destructive" 
-                    size="sm"
-                    onClick={() => setDeleteConfirm(tenant.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                    {/* Icon and Name */}
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0">
+                        <User className="h-4 w-4 text-blue-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-medium text-white truncate">
+                          {tenant.nameOrBusiness}
+                        </p>
+                        <p className="text-sm text-white/60 truncate">
+                          DNI/CUIT: {tenant.dniOrCuit}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Contact Info */}
+                    <div className="flex items-center gap-6 flex-shrink-0">
+                      {/* Phone */}
+                      <div className="text-center">
+                        <p className="text-xs text-white/60 mb-1">Teléfono</p>
+                        <div className="px-3 py-1 rounded-lg bg-white/10">
+                          <span className="text-sm font-semibold text-white">{tenant.contactPhone}</span>
+                        </div>
+                      </div>
+
+                      {/* Email */}
+                      <div className="text-center max-w-[200px]">
+                        <p className="text-xs text-white/60 mb-1">Email</p>
+                        <div className="px-3 py-1 rounded-lg bg-white/10">
+                          <span className="text-sm font-semibold text-white truncate block">{tenant.contactEmail}</span>
+                        </div>
+                      </div>
+
+                      {/* Status Badge */}
+                      <div className="text-center">
+                        <p className="text-xs text-white/60 mb-1">Estado</p>
+                        <div className="px-3 py-1 rounded-lg bg-green-500/20 text-green-300">
+                          <span className="text-sm font-semibold">Activo</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Arrow */}
+                    <ArrowRight className="h-5 w-5 text-white/40 group-hover:text-blue-400 group-hover:translate-x-1 transition-all flex-shrink-0" />
+                  </div>
+
+                  {/* Mobile View - Accordion */}
+                  <div className="md:hidden">
+                    {/* Header - Always Visible */}
+                    <div 
+                      className="flex items-center justify-between p-4 cursor-pointer"
+                      onClick={() => setExpandedClient(expandedClient === tenant.id ? null : tenant.id)}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="p-2 rounded-lg bg-blue-500/20 flex-shrink-0">
+                          <User className="h-4 w-4 text-blue-400" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-white truncate">{tenant.nameOrBusiness}</p>
+                          <p className="text-xs text-white/60 truncate">
+                            {tenant.contactPhone}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <div className="px-2 py-1 rounded-lg text-xs bg-green-500/20 text-green-300">
+                          Activo
+                        </div>
+                        <ChevronDown 
+                          className={`h-5 w-5 text-white/60 transition-transform ${
+                            expandedClient === tenant.id ? 'rotate-180' : ''
+                          }`}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Expanded Content */}
+                    {expandedClient === tenant.id && (
+                      <div className="px-4 pb-4 space-y-3 border-t border-white/10 pt-3">
+                        {/* Contact Info */}
+                        <div>
+                          <p className="text-xs text-white/60 mb-1">Información de Contacto</p>
+                          <div className="space-y-2">
+                            <div className="flex items-center text-sm text-white">
+                              <Phone className="h-4 w-4 mr-2 text-white/60" />
+                              <span>{tenant.contactPhone}</span>
+                            </div>
+                            <div className="flex items-center text-sm text-white">
+                              <Mail className="h-4 w-4 mr-2 text-white/60" />
+                              <span className="truncate">{tenant.contactEmail}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* DNI/CUIT */}
+                        <div className="p-3 rounded-lg bg-white/5">
+                          <p className="text-xs text-white/60 mb-1">DNI/CUIT</p>
+                          <p className="text-sm text-white">{tenant.dniOrCuit}</p>
+                        </div>
+
+                        {/* Address */}
+                        <div className="p-3 rounded-lg bg-white/5">
+                          <p className="text-xs text-white/60 mb-1">Dirección</p>
+                          <p className="text-sm text-white">{tenant.address}</p>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2 pt-2">
+                          <Button
+                            className="flex-1 bg-blue-500/20 text-blue-300 hover:bg-blue-500/30"
+                            onClick={() => router.push(`/clients/${tenant.id}/edit`)}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </Button>
+                          <Button
+                            className="bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setDeleteConfirm(tenant.id)
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+              ))}
+            </div>
+          )}
+        </GlassCardContent>
+      </GlassCard>
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
