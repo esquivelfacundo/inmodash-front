@@ -1,14 +1,18 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, User, Mail, Phone, MapPin, Edit, Trash2, Shield } from 'lucide-react'
+import { ArrowLeft, User, Mail, Phone, MapPin, Edit, Trash2, Shield, FileText, Building2, Home, Calendar, Clock } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Loading } from '@/components/ui/loading'
+import { Badge } from '@/components/ui/badge'
 import { useTenant, useTenants } from '@/hooks/useTenants'
 import { useGuarantorsByTenant } from '@/hooks/useGuarantors'
+import { useContracts } from '@/hooks/useContracts'
+import { useApartments } from '@/hooks/useApartments'
+import { useBuildings } from '@/hooks/useBuildings'
 
 export default function ClientDetailPage() {
   const params = useParams()
@@ -17,11 +21,58 @@ export default function ClientDetailPage() {
 
   const { tenant, loading: tenantLoading } = useTenant(tenantId)
   const { guarantors, loading: guarantorsLoading, deleteGuarantor } = useGuarantorsByTenant(tenantId)
+  const { contracts, loading: contractsLoading } = useContracts()
+  const { apartments, loading: apartmentsLoading } = useApartments()
+  const { buildings, loading: buildingsLoading } = useBuildings()
   const { deleteTenant } = useTenants()
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleteGuarantorConfirm, setDeleteGuarantorConfirm] = useState<number | null>(null)
 
-  const loading = tenantLoading || guarantorsLoading
+  const loading = tenantLoading || guarantorsLoading || contractsLoading || apartmentsLoading || buildingsLoading
+
+  // Filter contracts for this tenant
+  const tenantContracts = useMemo(() => {
+    return contracts.filter(contract => contract.tenantId === tenantId)
+  }, [contracts, tenantId])
+
+  // Separate active and past contracts
+  const { activeContracts, pastContracts } = useMemo(() => {
+    const now = new Date()
+    const active = tenantContracts.filter(contract => 
+      new Date(contract.startDate) <= now && new Date(contract.endDate) >= now
+    )
+    const past = tenantContracts.filter(contract => 
+      new Date(contract.endDate) < now
+    )
+    return { activeContracts: active, pastContracts: past }
+  }, [tenantContracts])
+
+  // Helper to get apartment and building info
+  const getPropertyInfo = (apartmentId: number) => {
+    const apartment = apartments.find(apt => apt.id === apartmentId)
+    if (!apartment) return null
+
+    const building = apartment.buildingId 
+      ? buildings.find(b => b.id === apartment.buildingId)
+      : null
+
+    return {
+      apartment,
+      building,
+      buildingName: building?.name || 'Propiedad Independiente',
+      unitName: apartment.nomenclature || '-',
+      fullAddress: apartment.fullAddress || '-'
+    }
+  }
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-AR', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    })
+  }
 
   const handleDelete = async () => {
     try {
@@ -159,6 +210,178 @@ export default function ClientDetailPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Active Contracts */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <FileText className="h-5 w-5 mr-2 text-green-600" />
+            Contratos Activos ({activeContracts.length})
+          </CardTitle>
+          <CardDescription>
+            Contratos de alquiler vigentes en este momento
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {activeContracts.length === 0 ? (
+            <div className="text-center py-8 text-white/60">
+              <FileText className="h-12 w-12 mx-auto mb-3 text-white/20" />
+              <p>No hay contratos activos en este momento</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {activeContracts.map((contract) => {
+                const propertyInfo = getPropertyInfo(contract.apartmentId)
+                return (
+                  <Card key={contract.id} className="bg-green-500/5 border-green-500/20">
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2 flex-1">
+                            <div className="flex items-center gap-2">
+                              <Badge className="bg-green-500/20 text-green-300 hover:bg-green-500/30">
+                                Activo
+                              </Badge>
+                              <p className="text-sm text-white/60">
+                                Contrato #{contract.id}
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Building2 className="h-4 w-4 text-white/60" />
+                                <p className="font-medium">{propertyInfo?.buildingName}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Home className="h-4 w-4 text-white/60" />
+                                <p className="text-white/80">Unidad: {propertyInfo?.unitName}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/contracts/${contract.id}`)}
+                          >
+                            Ver Detalles
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/10">
+                          <div>
+                            <p className="text-xs text-white/60 mb-1">Fecha de Inicio</p>
+                            <p className="text-sm font-medium flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-white/60" />
+                              {formatDate(contract.startDate)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-white/60 mb-1">Fecha de Finalización</p>
+                            <p className="text-sm font-medium flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-white/60" />
+                              {formatDate(contract.endDate)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-white/60 mb-1">Monto Inicial</p>
+                            <p className="text-sm font-medium">
+                              ${contract.initialAmount.toLocaleString('es-AR')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Contract History */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Clock className="h-5 w-5 mr-2 text-gray-600" />
+            Historial de Contratos ({pastContracts.length})
+          </CardTitle>
+          <CardDescription>
+            Contratos de alquiler finalizados
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {pastContracts.length === 0 ? (
+            <div className="text-center py-8 text-white/60">
+              <Clock className="h-12 w-12 mx-auto mb-3 text-white/20" />
+              <p>No hay contratos finalizados</p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {pastContracts.map((contract) => {
+                const propertyInfo = getPropertyInfo(contract.apartmentId)
+                return (
+                  <Card key={contract.id} className="bg-white/5 border-white/10">
+                    <CardContent className="pt-6">
+                      <div className="space-y-4">
+                        <div className="flex items-start justify-between">
+                          <div className="space-y-2 flex-1">
+                            <div className="flex items-center gap-2">
+                              <Badge className="bg-gray-500/20 text-gray-300 hover:bg-gray-500/30">
+                                Finalizado
+                              </Badge>
+                              <p className="text-sm text-white/60">
+                                Contrato #{contract.id}
+                              </p>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <Building2 className="h-4 w-4 text-white/60" />
+                                <p className="font-medium">{propertyInfo?.buildingName}</p>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Home className="h-4 w-4 text-white/60" />
+                                <p className="text-white/80">Unidad: {propertyInfo?.unitName}</p>
+                              </div>
+                            </div>
+                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => router.push(`/contracts/${contract.id}`)}
+                          >
+                            Ver Detalles
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t border-white/10">
+                          <div>
+                            <p className="text-xs text-white/60 mb-1">Fecha de Inicio</p>
+                            <p className="text-sm font-medium flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-white/60" />
+                              {formatDate(contract.startDate)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-white/60 mb-1">Fecha de Finalización</p>
+                            <p className="text-sm font-medium flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-white/60" />
+                              {formatDate(contract.endDate)}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-white/60 mb-1">Monto Inicial</p>
+                            <p className="text-sm font-medium">
+                              ${contract.initialAmount.toLocaleString('es-AR')}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Guarantors */}
       <Card>
