@@ -14,7 +14,7 @@ import { useApartments } from '@/hooks/useApartments'
 import { useBuildings } from '@/hooks/useBuildings'
 import { useGuarantors } from '@/hooks/useGuarantors'
 import { useContracts } from '@/hooks/useContracts'
-import { ApartmentStatus } from '@/types'
+import { ApartmentStatus, PropertyType } from '@/types'
 
 interface ContractCost {
   id: string
@@ -57,6 +57,11 @@ export default function NewContractPage() {
     isProfit: true,
   })
   const [submitting, setSubmitting] = useState(false)
+  
+  // Filters for apartments
+  const [apartmentSearch, setApartmentSearch] = useState('')
+  const [selectedPropertyType, setSelectedPropertyType] = useState<PropertyType | 'all'>('all')
+  const [selectedBuildingId, setSelectedBuildingId] = useState<number | 'all'>('all')
 
   const loading = tenantsLoading || apartmentsLoading || buildingsLoading || guarantorsLoading
 
@@ -74,8 +79,28 @@ export default function NewContractPage() {
 
   // Filter available apartments
   const availableApartments = useMemo(() => {
-    return apartments.filter((apt) => apt.status === ApartmentStatus.AVAILABLE)
-  }, [apartments])
+    let filtered = apartments.filter((apt) => apt.status === ApartmentStatus.AVAILABLE)
+    
+    // Filter by property type
+    if (selectedPropertyType !== 'all') {
+      filtered = filtered.filter((apt) => apt.propertyType === selectedPropertyType)
+    }
+    
+    // Filter by building (only for properties with buildingId)
+    if (selectedBuildingId !== 'all') {
+      filtered = filtered.filter((apt) => apt.buildingId === selectedBuildingId)
+    }
+    
+    // Filter by search term (nomenclature)
+    if (apartmentSearch) {
+      const term = apartmentSearch.toLowerCase()
+      filtered = filtered.filter((apt) => 
+        apt.nomenclature.toLowerCase().includes(term)
+      )
+    }
+    
+    return filtered
+  }, [apartments, selectedPropertyType, selectedBuildingId, apartmentSearch])
 
   // Get building name
   const getBuildingName = (buildingId: number | null | undefined) => {
@@ -83,6 +108,40 @@ export default function NewContractPage() {
     const building = buildings.find((b) => b.id === buildingId)
     return building?.name || 'Edificio desconocido'
   }
+
+  // Get property type label
+  const getPropertyTypeLabel = (type: PropertyType) => {
+    const labels: Record<PropertyType, string> = {
+      [PropertyType.APARTMENT]: 'Departamento',
+      [PropertyType.HOUSE]: 'Casa',
+      [PropertyType.DUPLEX]: 'Duplex',
+      [PropertyType.PH]: 'PH',
+      [PropertyType.OFFICE]: 'Oficina',
+      [PropertyType.COMMERCIAL]: 'Local Comercial',
+      [PropertyType.PARKING]: 'Cochera',
+      [PropertyType.WAREHOUSE]: 'Depósito',
+      [PropertyType.LAND]: 'Terreno',
+    }
+    return labels[type] || type
+  }
+
+  // Check if property type typically has a building
+  const propertyTypeHasBuilding = (type: PropertyType | 'all') => {
+    if (type === 'all') return true
+    return type === PropertyType.APARTMENT || type === PropertyType.OFFICE || type === PropertyType.PARKING
+  }
+
+  // Get available buildings for current property type filter
+  const availableBuildings = useMemo(() => {
+    return buildings.filter(building => {
+      const hasApartments = apartments.some(apt => 
+        apt.buildingId === building.id && 
+        apt.status === ApartmentStatus.AVAILABLE &&
+        (selectedPropertyType === 'all' || apt.propertyType === selectedPropertyType)
+      )
+      return hasApartments
+    })
+  }, [buildings, apartments, selectedPropertyType])
 
   // Filter guarantors for selected tenant
   const availableGuarantors = useMemo(() => {
@@ -298,13 +357,109 @@ export default function NewContractPage() {
                 <p className="text-white/60">Elige la unidad que se alquilará</p>
               </div>
 
+              {/* Filters */}
+              <div className="space-y-4">
+                {/* Search by nomenclature */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/40" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar por nomenclatura (ej: 1A, 2B)..."
+                    value={apartmentSearch}
+                    onChange={(e) => setApartmentSearch(e.target.value)}
+                    className="pl-10 bg-white/5 border-white/10 text-white"
+                  />
+                </div>
+
+                {/* Property Type Filter */}
+                <div className="space-y-2">
+                  <Label>Tipo de Propiedad</Label>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      variant={selectedPropertyType === 'all' ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => {
+                        setSelectedPropertyType('all')
+                        setSelectedBuildingId('all')
+                      }}
+                      className={selectedPropertyType === 'all' ? 'bg-blue-600' : 'bg-white/5'}
+                    >
+                      Todos
+                    </Button>
+                    {Object.values(PropertyType).map((type) => (
+                      <Button
+                        key={type}
+                        type="button"
+                        variant={selectedPropertyType === type ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => {
+                          setSelectedPropertyType(type)
+                          setSelectedBuildingId('all')
+                        }}
+                        className={selectedPropertyType === type ? 'bg-blue-600' : 'bg-white/5'}
+                      >
+                        {getPropertyTypeLabel(type)}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Building Filter - Only show if property type can have building */}
+                {propertyTypeHasBuilding(selectedPropertyType) && availableBuildings.length > 0 && (
+                  <div className="space-y-2">
+                    <Label>Edificio</Label>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        type="button"
+                        variant={selectedBuildingId === 'all' ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setSelectedBuildingId('all')}
+                        className={selectedBuildingId === 'all' ? 'bg-blue-600' : 'bg-white/5'}
+                      >
+                        Todos
+                      </Button>
+                      {availableBuildings.map((building) => (
+                        <Button
+                          key={building.id}
+                          type="button"
+                          variant={selectedBuildingId === building.id ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => setSelectedBuildingId(building.id)}
+                          className={selectedBuildingId === building.id ? 'bg-blue-600' : 'bg-white/5'}
+                        >
+                          {building.name}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Results count */}
+              <div className="text-sm text-white/60">
+                {availableApartments.length} {availableApartments.length === 1 ? 'unidad disponible' : 'unidades disponibles'}
+              </div>
+
               {availableApartments.length === 0 ? (
                 <div className="text-center py-12">
                   <Home className="h-12 w-12 text-white/20 mx-auto mb-3" />
-                  <p className="text-white/60">No hay unidades disponibles</p>
+                  <p className="text-white/60">No hay unidades disponibles con los filtros seleccionados</p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-4"
+                    onClick={() => {
+                      setApartmentSearch('')
+                      setSelectedPropertyType('all')
+                      setSelectedBuildingId('all')
+                    }}
+                  >
+                    Limpiar Filtros
+                  </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
                   {availableApartments.map((apartment) => (
                     <div
                       key={apartment.id}
